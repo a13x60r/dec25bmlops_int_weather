@@ -1,53 +1,101 @@
-Project Name
-==============================
+Weather Forecast in Australia — MLOps
+====================================
 
-This project is a starting Pack for MLOps projects based on the subject "movie_recommandation". It's not perfect so feel free to make some modifications on it.
+This project is an **MLOps-oriented weather forecasting system** based on Australian daily weather observations.  
+It extends the classic *cookiecutter data science* structure with **data versioning, experiment tracking, CI/CD, deployment, and monitoring**.
+
+Primary ML task: **RainTomorrow (binary classification)**  
+Secondary (optional): temperature, wind, and time-series forecasting.
+
+Dataset:  
+https://www.kaggle.com/jsphyg/weather-dataset-rattle-package
+
+---
 
 Project Organization
-------------
+--------------------
 
     ├── LICENSE
-    ├── README.md          <- The top-level README for developers using this project.
-    ├── data
-    │   ├── external       <- Data from third party sources.
-    │   ├── interim        <- Intermediate data that has been transformed.
-    │   ├── processed      <- The final, canonical data sets for modeling.
-    │   └── raw            <- The original, immutable data dump.
+    ├── README.md              <- Project overview and instructions
     │
-    ├── logs               <- Logs from training and predicting
+    ├── data                   <- Versioned with DVC
+    │   ├── external           <- Third-party data sources
+    │   ├── interim            <- Intermediate transformed data
+    │   ├── processed          <- Final datasets for modeling
+    │   └── raw                <- Original immutable data
     │
-    ├── models             <- Trained and serialized models, model predictions, or model summaries
+    ├── logs                   <- Training, inference, and pipeline logs
     │
-    ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-    │                         the creator's initials, and a short `-` delimited description, e.g.
-    │                         `1.0-jqp-initial-data-exploration`.
+    ├── models                 <- Serialized models and predictions
     │
-    ├── references         <- Data dictionaries, manuals, and all other explanatory materials.
+    ├── notebooks              <- Jupyter notebooks (EDA, experiments)
+    │   └── 1.0-*-initial-eda.ipynb
     │
-    ├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-    │   └── figures        <- Generated graphics and figures to be used in reporting
+    ├── references             <- Data dictionaries, BOM docs, specs
     │
-    ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
-    │                         generated with `pip freeze > requirements.txt`
+    ├── reports                <- Analysis reports
+    │   └── figures            <- Generated plots and visual assets
     │
-    ├── src                <- Source code for use in this project.
-    │   ├── __init__.py    <- Makes src a Python module
+    ├── artifacts              <- MLflow/DVC outputs (metrics, artifacts)
+    │
+    ├── docker                 <- Dockerfiles and compose configs
+    │
+    ├── dvc.yaml               <- Reproducible ML pipeline definition
+    ├── params.yaml            <- Model and data parameters
+    │
+    ├── requirements.txt       <- Pinned Python dependencies
+    │
+    ├── src                    <- Source code
+    │   ├── __init__.py
     │   │
-    │   ├── data           <- Scripts to download or generate data
-    │   │   └── make_dataset.py
+    │   ├── data               <- Data ingestion and validation
+    │   │   └── make_dataset.py
     │   │
-    │   ├── features       <- Scripts to turn raw data into features for modeling
-    │   │   └── build_features.py
+    │   ├── features           <- Feature engineering
+    │   │   └── build_features.py
     │   │
-    │   ├── models         <- Scripts to train models and then use trained models to make
-    │   │   │                 predictions
-    │   │   ├── predict_model.py
-    │   │   └── train_model.py
+    │   ├── models             <- Training and inference
+    │   │   ├── train_model.py
+    │   │   └── predict_model.py
     │   │
-    │   ├── visualization  <- Scripts to create exploratory and results oriented visualizations
-    │   │   └── visualize.py
-    │   └── config         <- Describe the parameters used in train_model.py and predict_model.py
+    │   ├── visualization      <- EDA and reporting plots
+    │   │   └── visualize.py
+    │   │
+    │   └── config             <- Model, training, and infra configs
+    │
+    ├── tests                  <- Unit and pipeline smoke tests
+    └── docker-compose.yml     <- Local MLflow / infra services
 
---------
+---
 
-<p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
+MLOps Stack
+-----------
+- **DVC + DAGsHub** — data & pipeline versioning  
+- **MLflow** — experiment tracking & model registry  
+- **Weights & Biases** — experiment comparison & dashboards  
+- **Docker** — reproducible environments  
+- **Airflow** — pipeline orchestration  
+- **BentoML** — model serving  
+- **Jenkins** — CI/CD  
+- **Prometheus + Grafana** — monitoring & drift  
+- **Kubernetes** — scalable deployment  
+
+---
+
+Key Metrics
+-----------
+- **Classification:** ROC-AUC, F1, Precision, Recall, PR-AUC  
+- **Regression (optional):** RMSE, MAE  
+- **MLOps:** latency (p95), error rate, data drift (PSI / KS)
+
+---
+
+References
+----------
+- Australian Bureau of Meteorology: http://www.bom.gov.au/climate/data  
+- Example repo: https://github.com/DataScientest-Studio/dec25bmlops_int_weather  
+
+---
+
+Project based on the  
+[cookiecutter data science project template](https://drivendata.github.io/cookiecutter-data-science/).

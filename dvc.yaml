@@ -1,0 +1,11 @@
+stages:
+  train:
+    cmd: python -m weather_au_mlops.train
+    deps:
+      - src/weather_au_mlops/train.py
+      - src/weather_au_mlops/config.py
+      - params.yaml
+    outs:
+      - artifacts/model.joblib
+    metrics:
+      - artifacts/metrics.json

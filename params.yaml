@@ -1,0 +1,16 @@
+data:
+  raw_csv: data/raw/weatherAUS.csv
+
+split:
+  time_col: Date
+  test_start: "2016-01-01"
+  val_start: "2014-01-01"
+
+model:
+  type: logistic_regression
+  random_state: 42
+  class_weight: balanced
+
+features:
+  target: RainTomorrow
+  drop_cols: ["RISK_MM"]

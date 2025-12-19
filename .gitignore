@@ -78,6 +78,10 @@ target/
 # exclude data from source control by default
 /data/
 
+# Data (tracked with DVC)
+data/raw/
+data/processed/
+
 # Mac OS-specific storage files
 .DS_Store
 
@@ -89,3 +93,17 @@ target/
 .mypy_cache/
 
 data
+
+# ML artifacts
+mlruns/
+wandb/
+artifacts/
+*.pkl
+*.joblib
+
+# Python venv
+.venv/
+venv/
+.env/
+__pycache__/
+*.pyc
