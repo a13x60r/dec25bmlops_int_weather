@@ -1,0 +1,19 @@
+FROM python:3.11.7-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1
+
+WORKDIR /workspace
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git curl ca-certificates build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt /workspace/requirements.txt
+COPY pyproject.toml /workspace/pyproject.toml
+COPY ruff.toml /workspace/ruff.toml
+COPY pytest.ini /workspace/pytest.ini
+
+RUN python -m pip install --upgrade pip && pip install -r /workspace/requirements.txt
+RUN pip install -e /workspace || true

@@ -17,7 +17,7 @@ services:
       retries: 20
 
   minio:
-    image: minio/minio:RELEASE.2024-08-03T04-33-23Z
+    image: minio/minio
     container_name: mlops_minio
     command: server /data --console-address ":9001"
     environment:
@@ -35,7 +35,7 @@ services:
       retries: 20
 
   minio_setup:
-    image: minio/mc:RELEASE.2024-08-02T14-15-05Z
+    image: minio/mc
     container_name: mlops_minio_setup
     depends_on:
       minio:
@@ -44,7 +44,9 @@ services:
       /bin/sh -c " mc alias set local http://minio:9000 minio minio12345 && mc mb -p local/mlflow || true && mc anonymous set none local/mlflow || true "
 
   mlflow:
-    image: ghcr.io/mlflow/mlflow:v2.15.1
+    build:
+      context: .
+      dockerfile: Dockerfile.mlflow
     container_name: mlops_mlflow
     depends_on:
       postgres:
@@ -52,7 +54,6 @@ services:
       minio_setup:
         condition: service_completed_successfully
     environment:
-      MLFLOW_TRACKING_URI: http://0.0.0.0:5000
       MLFLOW_S3_ENDPOINT_URL: http://minio:9000
       AWS_ACCESS_KEY_ID: minio
       AWS_SECRET_ACCESS_KEY: minio12345
@@ -67,39 +68,57 @@ services:
       timeout: 5s
       retries: 20
 
-  # Optional: reverse proxy for a stable endpoint (and later TLS)
-  nginx:
-    image: nginx:1.27
-    container_name: mlops_nginx
-    depends_on:
-      mlflow:
-        condition: service_healthy
-    ports:
-      - "8080:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-
-  # Optional: run training inside Docker with the same network + env
-  trainer:
+  dev:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: mlops_trainer
+      dockerfile: Dockerfile.dev
+    container_name: mlops_dev
     depends_on:
       mlflow:
         condition: service_healthy
-    env_file:
-      - .env
     environment:
-      # Ensure in-container MLflow points to the mlflow service, not localhost
+      # In-container address for MLflow
       MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_EXPERIMENT_NAME: weather-au-rain
+      # MinIO for artifacts
       MLFLOW_S3_ENDPOINT_URL: http://minio:9000
       AWS_ACCESS_KEY_ID: minio
       AWS_SECRET_ACCESS_KEY: minio12345
       AWS_DEFAULT_REGION: us-east-1
-    command: [ "python", "-m", "weather_au_mlops.train" ]
+      # W&B (set your keys locally via env or .env)
+      WANDB_PROJECT: weather-au-mlops
+      WANDB_MODE: online
+    volumes:
+      - ./:/workspace
+      - pip_cache:/root/.cache/pip
+    working_dir: /workspace
+    command: [ "bash", "-lc", "pip install -e . && tail -f /dev/null" ]
+
+  trainer:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: mlops_trainer
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_EXPERIMENT_NAME: weather-au-rain
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: minio
+      AWS_SECRET_ACCESS_KEY: minio12345
+      AWS_DEFAULT_REGION: us-east-1
+      WANDB_PROJECT: weather-au-mlops
+      WANDB_MODE: online
+    volumes:
+      - ./:/workspace
+      - pip_cache:/root/.cache/pip
+    working_dir: /workspace
+    command: [ "bash", "-lc", "pip install -e . && python -m weather_au_mlops.train" ]
     profiles: [ "train" ]
 
 volumes:
   postgres_data:
   minio_data:
+  pip_cache:
