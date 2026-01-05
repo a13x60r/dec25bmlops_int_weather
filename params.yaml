@@ -1,7 +1,13 @@
 # Data parameters
 data:
   raw_csv: data/raw/weatherAUS.csv
-  processed_csv: data/processed/weatherAUS_processed.csv
+
+  interim_csv: data/interim/df_preprocessed.csv
+  processed_dir: data/processed
+  X_train: data/processed/X_train.csv
+  X_test: data/processed/X_test.csv
+  y_train: data/processed/y_train.csv
+  y_test: data/processed/y_test.csv
   test_size: 0.2
   random_state: 42
 
