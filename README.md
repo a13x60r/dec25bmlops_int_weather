@@ -136,3 +136,49 @@ python src/models/train_model.py
 # Run predictions on test data
 python src/models/predict_model.py
 ```
+---
+
+API Usage
+-----------
+### Start API
+
+```bash
+# Activate virtual environment
+source venv/bin/activate
+
+# Start FastAPI server
+python src/api/main.py
+```
+
+# API information
+```bash
+curl http://localhost:8000/
+```
+
+```
+http://localhost:8000
+```
+
+```
+http://localhost:8000/docs
+```
+
+# Health check
+```bash
+curl http://localhost:8000/health
+```
+
+```
+http://localhost:8000/health
+```
+
+# Training endpoint
+```bash
+curl -X POST http://localhost:8000/train
+```
+
+# Test prediction with sample of X_test
+```bash
+python test_predict.py
+```
+---
