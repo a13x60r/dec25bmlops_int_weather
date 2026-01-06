@@ -99,3 +99,40 @@ References
 
 Project based on the  
 [cookiecutter data science project template](https://drivendata.github.io/cookiecutter-data-science/).
+
+---
+
+Quick Start
+-----------
+### Setup
+
+```bash
+# Clone repository
+git clone https://github.com/a13x60r/dec25bmlops_int_weather.git
+cd dec25bmlops_int_weather
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Data Pipeline
+```bash
+# Preprocess raw data
+python src/data/preprocess.py
+```
+
+### Model training
+```bash
+# Train XGBoost model
+python src/models/train_model.py
+```
+
+### Make predictions
+```bash
+# Run predictions on test data
+python src/models/predict_model.py
+```
