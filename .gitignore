@@ -107,3 +107,10 @@ venv/
 .env/
 __pycache__/
 *.pyc
+
+.dvc/cache
+.dvc/cache/
+.dvc/cache/*
+.dvc/tmp
+.dvc/tmp/
+.dvc/tmp/*
