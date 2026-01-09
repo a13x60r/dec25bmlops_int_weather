@@ -1,4 +1,23 @@
 services:
+
+  # MongoDB - Phase 1 data storage
+  mongodb:
+    image: mongo:7.0
+    container_name: mlops_mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   postgres:
     image: postgres:16
     container_name: mlops_postgres
@@ -119,6 +138,7 @@ services:
     profiles: [ "train" ]
 
 volumes:
+  mongodb_data:
   postgres_data:
   minio_data:
   pip_cache:
