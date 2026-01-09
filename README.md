@@ -104,6 +104,12 @@ dvc repro
 ```
 *Ensure you have configured your DVC credentials in `.dvc/config.local` as described below.*
 
+### 4. Run Training Manually (Optional)
+If you wish to run only the training script without checking the full DVC pipeline:
+```bash
+python -m weather_au_mlops.train
+```
+
 ---
 
 Run with Docker Compose
