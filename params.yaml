@@ -1,6 +1,6 @@
 # Data parameters
 data:
-  raw_csv: data/raw/weatherAUS.csv
+  raw_csv: data/weatherAUS.csv
 
   interim_csv: data/interim/df_preprocessed.csv
   processed_dir: data/processed

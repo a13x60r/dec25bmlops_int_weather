@@ -75,6 +75,12 @@ target/
 # Jupyter NB Checkpoints
 .ipynb_checkpoints/
 
+.dvc/cache/
+.dvc/tests/
+.dvc/config.local
+.dvc/lock
+.dvc/
+test/
 # exclude data from source control by default
 #/data/
 
@@ -114,3 +120,9 @@ __pycache__/
 models/*.json
 !data/*/.gitkeep
 logs/*.log
+.dvc/cache
+.dvc/cache/
+.dvc/cache/*
+.dvc/tmp
+.dvc/tmp/
+.dvc/tmp/*

@@ -1,0 +1,26 @@
+schema: '2.0'
+stages:
+  train:
+    cmd: python -m weather_au_mlops.train
+    deps:
+    - path: params.yaml
+      hash: md5
+      md5: 0487478f40dae05a1678e164e122a8ea
+      size: 270
+    - path: src/weather_au_mlops/config.py
+      hash: md5
+      md5: bf25b2fa6dc91437212030446e3f9236
+      size: 506
+    - path: src/weather_au_mlops/train.py
+      hash: md5
+      md5: f3edb524b7001a4fe530e4aa97625c23
+      size: 1758
+    outs:
+    - path: artifacts/metrics.json
+      hash: md5
+      md5: 2b67ce6c573aea784feb3f36a349c840
+      size: 24
+    - path: artifacts/model.joblib
+      hash: md5
+      md5: 299342bea40a98f809a2da0bfc8994d9
+      size: 1039
