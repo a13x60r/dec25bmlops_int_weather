@@ -68,6 +68,36 @@ Project Organization
 
 ---
 
+Run with Docker Compose
+-----------------------
+
+### 1. Configure DVC Credentials
+To access data from version control, you must configure your DVC remote credentials:
+1.  Navigate to the `.dvc` folder in the project root.
+2.  Rename the file `!config.local` to `config.local` (remove the `!` exclamation mark).
+    - *Note:* Do not commit `config.local` to version control as it contains secrets.
+3.  Open `config.local` and enter your DagsHub credentials:
+    ```ini
+    user = <your-dagshub-username>
+    password = <your-dagshub-token-or-password>
+    ```
+
+### 2. Run the Application
+Start the entire infrastructure (MLflow, MinIO, PostgreSQL) and the development container:
+```bash
+docker compose up -d
+```
+You can access the services at:
+- **MLflow UI**: [http://localhost:5000](http://localhost:5000)
+- **MinIO Console**: [http://localhost:9001](http://localhost:9001)
+
+To run the training pipeline specifically:
+```bash
+docker compose --profile train up
+```
+
+---
+
 MLOps Stack
 -----------
 - **DVC + DAGsHub** — data & pipeline versioning  
