@@ -68,6 +68,44 @@ Project Organization
 
 ---
 
+Run Locally (Virtual Environment)
+---------------------------------
+
+If you prefer to run the project without Docker, follow these steps:
+
+### 1. Create and Activate Virtual Environment
+
+**Windows (PowerShell):**
+```powershell
+# Create venv
+python -m venv venv
+
+# Activate venv
+.\venv\Scripts\Activate
+```
+
+**Linux/macOS:**
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 2. Install Dependencies
+Install the package in **editable mode** (crucial for local development) and all requirements:
+```bash
+pip install -e .
+pip install -r requirements.txt
+```
+
+### 3. Run DVC Pipeline
+Reproduce the pipeline to train the model and generate artifacts:
+```bash
+dvc repro
+```
+*Ensure you have configured your DVC credentials in `.dvc/config.local` as described below.*
+
+---
+
 Run with Docker Compose
 -----------------------
 
@@ -95,6 +133,19 @@ To run the training pipeline specifically:
 ```bash
 docker compose --profile train up
 ```
+
+
+### 3. Run DVC Pipeline in Docker
+To run the full reproducible pipeline (which updates `dvc.lock` and ensures data consistency), use the `dev` service:
+1.  Ensure the dev container is running:
+    ```bash
+    docker compose up -d dev
+    ```
+2.  Execute the reproduction command inside the container:
+    ```bash
+    docker compose exec dev dvc repro
+    ```
+    *Note: This mounts your local directory, so artifacts generated inside the container (like `models/`) will appear on your host machine.*
 
 ---
 
