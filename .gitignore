@@ -103,6 +103,7 @@ data/external/
 #data
 
 # ML artifacts
+artifacts/
 mlruns/
 wandb/
 #artifacts/
