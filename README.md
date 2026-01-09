@@ -125,10 +125,20 @@ pip install -r requirements.txt
 python src/data/preprocess.py
 ```
 
+```bash
+# Split data year based to simulate data evolution over time
+python src/data/training_data_splits_by_year.py
+```
+
 ### Model training
 ```bash
-# Train XGBoost model
-python src/models/train_model.py
+# Train XGBoost model, split_id: 1-9
+python src/models/train_model.py --split_id 1
+```
+
+```
+# MLFlow:
+ http://localhost:5000/
 ```
 
 ### Make predictions
@@ -170,6 +180,16 @@ curl http://localhost:8000/health
 
 ```
 http://localhost:8000/health
+```
+
+# Model info
+```bash
+curl http://localhost:8000/model/info
+```
+
+# Reload model
+```bahs
+curl -X POST http://localhost:8000/model/refresh
 ```
 
 # Training endpoint

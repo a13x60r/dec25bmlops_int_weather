@@ -1,8 +1,7 @@
 """
 Preprocessing of raw weather data.
 
-This script takes the raw Kaggle dataset and performs initial cleaning and
-feature engineering.
+This script takes the raw Kaggle dataset and performs initial cleaning and feature engineering.
 
 Input:  data/raw/weatherAUS.csv
 Output: data/interim/df_preprocessed.csv, data/processed/X_train.csv, data/processed/y_train.csv, data_processed/X_test.csv, data/processed/y_test.csv
@@ -181,8 +180,7 @@ print('Preprocessing Step 8: Changed boolean to integers.')
 
 numerical_cols_scale = ['MinTemp', 'MaxTemp', 'Rainfall', 'WindGustSpeed',
                          'WindSpeed9am', 'WindSpeed3pm', 'Humidity9am', 'Humidity3pm',
-                         'Pressure9am', 'Pressure3pm', 'Temp9am', 'Temp3pm',
-                         'Year']
+                         'Pressure9am', 'Pressure3pm', 'Temp9am', 'Temp3pm']
 
 # Generate scaler
 scaler = StandardScaler()
