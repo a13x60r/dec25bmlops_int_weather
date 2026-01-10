@@ -18,9 +18,9 @@ stages:
       - src/data/training_data_splits_by_year.py
       - data/processed/X_train.csv
       - data/processed/y_train.csv
-      - params.yaml
     outs:
-      - data/training_data_splits_by_year
+      - data/training_data_splits_by_year:
+          cache: false
 
   train:
     cmd: python src/models/train_model.py --split_id ${train.split_id}

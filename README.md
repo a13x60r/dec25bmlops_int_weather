@@ -222,6 +222,7 @@ python src/data/preprocess.py
 
 ```bash
 # Split data year based to simulate data evolution over time
+# Helper script to simulate realistic data accumulation (2008-2016)
 python src/data/training_data_splits_by_year.py
 ```
 
