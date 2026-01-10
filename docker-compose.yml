@@ -135,6 +135,13 @@ services:
       - uv_cache:/root/.cache/uv
     working_dir: /workspace
     command: [ "bash", "-lc", "uv pip install --system -e . && dvc repro" ]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
     profiles: [ "train" ]
 
 volumes:

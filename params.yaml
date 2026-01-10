@@ -18,6 +18,7 @@ train:
 # Model parameters
 model:
   type: xgboost                   # From LazyClassifier 
+  device: cuda                    # Use 'cuda' for GPU, 'cpu' for CPU
   max_depth: 9                    # From GridSearch
   learning_rate: 0.05             # From GridSearch
   n_estimators: 200               # From GridSearch

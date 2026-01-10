@@ -140,9 +140,23 @@ To run the training pipeline specifically:
 docker compose --profile train up --build
 ```
 
+### GPU Support
+The training container is configured to use NVIDIA GPUs if available.
+**Prerequisites:**
+1.  **NVIDIA Drivers** installed on the host.
+2.  **NVIDIA Container Toolkit** installed and configured for Docker.
+
+**Configuration:**
+- The `trainer` service in `docker-compose.yml` requests GPU resources.
+- `params.yaml` is set to `device: cuda` (change to `cpu` to disable).
+
 **Optimization Notes:**
-- The Docker setup now uses **`uv`** (a fast Python package manager) instead of `pip` to significantly speed up build/install times.
-- A persistent volume `uv_cache` is configured to cache dependencies between runs.
+- **Fast Builds**: A `.dockerignore` file is included to exclude large directories (`data`, `models`, `.venv`) from the build context, significantly speeding up container builds.
+- **Dependency Caching**: The Docker setup uses **`uv`** and a persistent volume `uv_cache` to cache Python dependencies.
+- **Device Selection**: You can override the device configuration by passing `--device` to the training script:
+  ```bash
+  docker compose run --rm trainer python src/models/train_model.py --split_id 1 --device cuda
+  ```
 - If you don't see training start (only "Stage 'train' didn't change" logs), it means DVC detects no file changes. To force re-training:
   ```bash
   docker compose run --rm trainer dvc repro -f

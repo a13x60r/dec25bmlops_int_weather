@@ -10,17 +10,17 @@ stages:
       nfiles: 37
     - path: params.yaml
       hash: md5
-      md5: bd5506e54ec7768ff9b11a134496c94f
-      size: 1201
+      md5: c14284e802d4d3f1e0e873bd34940f6f
+      size: 1272
     - path: src/models/train_model.py
       hash: md5
-      md5: 59e023eba7f1f7ff57b8cf2baaa8afe1
-      size: 12374
+      md5: e60ebf37299a24ab791bd2b0413b218b
+      size: 12776
     outs:
     - path: models/xgboost_model.pkl
       hash: md5
-      md5: 445ba3af40c02ccd6fd833f6f3f699fa
-      size: 585299
+      md5: a3338567090f6d942c948239c44cf4a5
+      size: 583101
   preprocess:
     cmd: python src/data/preprocess.py
     deps:
@@ -30,8 +30,8 @@ stages:
       size: 14094055
     - path: params.yaml
       hash: md5
-      md5: bd5506e54ec7768ff9b11a134496c94f
-      size: 1201
+      md5: c14284e802d4d3f1e0e873bd34940f6f
+      size: 1272
     - path: src/data/preprocess.py
       hash: md5
       md5: 4efc81519df2ac90bb26970156c9a228

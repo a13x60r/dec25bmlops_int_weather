@@ -102,9 +102,13 @@ def get_current_production_model():
         return None, 0.0
 
 
+
 # Training function
-def train_model(split_id=None):
+def train_model(split_id=None, device_override=None):
     print(f"Training on split {split_id} (MLflow mode)")
+    if device_override:
+        print(f"Device override: {device_override}")
+
 
     # ==================== Step 1: Load Data ====================
     X_train, X_test, y_train, y_test, split_info = load_split_data(split_id)
@@ -161,6 +165,7 @@ def train_model(split_id=None):
             'gamma': PARAMS['model']['gamma'],
             'min_child_weight': PARAMS['model']['min_child_weight'],
             'random_state': PARAMS['model']['random_state'],
+            'device': device_override or PARAMS['model'].get('device', 'cpu'),
             'eval_metric': 'logloss',
             'use_label_encoder': False
         }
@@ -305,6 +310,13 @@ def main():
         default=None,
         help="Split ID to train on (1-9)."
     )
+    parser.add_argument(
+        "--device",
+        type=str,
+        default=None,
+        choices=["cpu", "cuda"],
+        help="Device to use for training (cpu or cuda)."
+    )
     args = parser.parse_args()
     
     if args.split_id and not (1 <= args.split_id <= 9):
@@ -312,7 +324,7 @@ def main():
         sys.exit(1)
 
     try:
-        f1, promoted = train_model(split_id=args.split_id)
+        f1, promoted = train_model(split_id=args.split_id, device_override=args.device)
         
         print('Trainng complete.')
         print(f"F1 Score: {f1:.4f}")
