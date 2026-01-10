@@ -79,16 +79,15 @@ target/
 .dvc/tests/
 .dvc/config.local
 .dvc/lock
-.dvc/
+
 test/
 # exclude data from source control by default
 #/data/
 
 # Data (tracked with DVC)
-data/
-data/processed/
-data/interim/
-data/external/
+data/**/*
+!data/**/
+!*.dvc
 
 # Artifacts
 artifacts/
@@ -130,3 +129,5 @@ models/*.json
 !data/*/.gitkeep
 logs/*.log
 
+
+!*.dvc
