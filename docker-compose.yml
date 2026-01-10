@@ -109,9 +109,9 @@ services:
       WANDB_MODE: online
     volumes:
       - ./:/workspace
-      - pip_cache:/root/.cache/pip
+      - uv_cache:/root/.cache/uv
     working_dir: /workspace
-    command: [ "bash", "-lc", "pip install -e . && tail -f /dev/null" ]
+    command: [ "bash", "-lc", "uv pip install --system -e . && tail -f /dev/null" ]
 
   trainer:
     build:
@@ -132,13 +132,13 @@ services:
       WANDB_MODE: online
     volumes:
       - ./:/workspace
-      - pip_cache:/root/.cache/pip
+      - uv_cache:/root/.cache/uv
     working_dir: /workspace
-    command: [ "bash", "-lc", "pip install -e . && dvc repro" ]
+    command: [ "bash", "-lc", "uv pip install --system -e . && dvc repro" ]
     profiles: [ "train" ]
 
 volumes:
   mongodb_data:
   postgres_data:
   minio_data:
-  pip_cache:
+  uv_cache:

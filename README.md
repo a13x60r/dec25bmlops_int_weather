@@ -137,8 +137,16 @@ You can access the services at:
 
 To run the training pipeline specifically:
 ```bash
-docker compose --profile train up
+docker compose --profile train up --build
 ```
+
+**Optimization Notes:**
+- The Docker setup now uses **`uv`** (a fast Python package manager) instead of `pip` to significantly speed up build/install times.
+- A persistent volume `uv_cache` is configured to cache dependencies between runs.
+- If you don't see training start (only "Stage 'train' didn't change" logs), it means DVC detects no file changes. To force re-training:
+  ```bash
+  docker compose run --rm trainer dvc repro -f
+  ```
 
 
 ### 3. Run DVC Pipeline in Docker
