@@ -85,10 +85,13 @@ test/
 #/data/
 
 # Data (tracked with DVC)
-data/raw/
+data/
 data/processed/
 data/interim/
 data/external/
+
+# Artifacts
+artifacts/
 
 # Mac OS-specific storage files
 .DS_Store

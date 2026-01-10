@@ -13,7 +13,7 @@ services:
     volumes:
       - mongodb_data:/data/db
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -134,7 +134,7 @@ services:
       - ./:/workspace
       - pip_cache:/root/.cache/pip
     working_dir: /workspace
-    command: [ "bash", "-lc", "pip install -e . && python -m weather_au_mlops.train" ]
+    command: [ "bash", "-lc", "pip install -e . && dvc repro" ]
     profiles: [ "train" ]
 
 volumes:

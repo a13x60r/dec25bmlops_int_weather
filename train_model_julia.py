@@ -33,10 +33,7 @@ from src.config import PARAMS
 
 
 # MLFlow configuration
-
-# MLFlow configuration
-import os
-MLFLOW_TRACKING_URI = os.environ.get("MLFLOW_TRACKING_URI") or PARAMS['mlflow']['tracking_uri'] or "http://127.0.0.1:5000"
+MLFLOW_TRACKING_URI = "http://127.0.0.1:5000"
 EXPERIMENT_NAME = "WeatherAUS_YearBased_Training"
 MODEL_NAME = "RainTomorrow_XGBoost"
 

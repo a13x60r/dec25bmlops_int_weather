@@ -91,8 +91,19 @@ df['RainToday'] = df['RainToday'].map({'No': 0, 'Yes': 1})
 print('Preproecssing Step 4: Changed in RainTomorrow and RainToday columns No to 0 and Yes to 1.')
 
 
-# Save dataset in interim folder
-df.to_csv('data/interim/df_preprocessed.csv', index=False)
+
+
+try:
+    # Save dataset in interim folder
+    Path('data/interim').mkdir(parents=True, exist_ok=True)
+    df.to_csv('data/interim/df_preprocessed.csv', index=False)
+except Exception as e:
+    import traceback
+    with open('error_log.txt', 'a') as f:
+        f.write("\n--- INTERIM SAVE ERROR ---\n")
+        f.write(traceback.format_exc())
+    print(f"ERROR SAVING INTERIM: {e}")
+    raise
 
 print('Saved: data/interim/df_preprocessed.csv')
 print('Columns: ', df.columns)
@@ -193,8 +204,18 @@ X_test[numerical_cols_scale] = scaler.transform(X_test[numerical_cols_scale])
 print('Preprocessing Step 8: Scaling of numerical columns using StandardScaler.')
 
 
-# Save modeling datasets in data/processed
-X_train.to_csv('data/processed/X_train.csv', index=False)
+
+
+try:
+    # Save modeling datasets in data/processed
+    Path('data/processed').mkdir(parents=True, exist_ok=True)
+    X_train.to_csv('data/processed/X_train.csv', index=False)
+except Exception as e:
+    import traceback
+    with open('error_log.txt', 'w') as f:
+        f.write(traceback.format_exc())
+    print(f"ERROR SAVING FILES: {e}")
+    raise
 y_train.to_csv('data/processed/y_train.csv', index=False, header=True)
 
 X_test.to_csv('data/processed/X_test.csv', index=False)

@@ -1,11 +1,34 @@
 stages:
-  train:
-    cmd: python -m weather_au_mlops.train
+  preprocess:
+    cmd: python src/data/preprocess.py
     deps:
-      - src/weather_au_mlops/train.py
-      - src/weather_au_mlops/config.py
+      - src/data/preprocess.py
+      - data/raw/weatherAUS.csv
       - params.yaml
     outs:
-      - artifacts/model.joblib
-    metrics:
-      - artifacts/metrics.json
+      - data/interim/df_preprocessed.csv
+      - data/processed/X_train.csv
+      - data/processed/y_train.csv
+      - data/processed/X_test.csv
+      - data/processed/y_test.csv
+
+  prepare_splits:
+    cmd: python src/data/training_data_splits_by_year.py
+    deps:
+      - src/data/training_data_splits_by_year.py
+      - data/processed/X_train.csv
+      - data/processed/y_train.csv
+      - data/processed/X_test.csv
+      - data/processed/y_test.csv
+      - params.yaml
+
+  train:
+    cmd: python src/models/train_model.py --split_id ${train.split_id}
+    deps:
+      - src/models/train_model.py
+      - data/training_data_splits_by_year
+      - params.yaml
+    outs:
+      - models/xgboost_model.pkl
+    # metrics:  # Removed explicit file metrics as script uses mlflow, or we can restore if script writes json
+

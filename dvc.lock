@@ -1,26 +1,86 @@
 schema: '2.0'
 stages:
   train:
-    cmd: python -m weather_au_mlops.train
+    cmd: python src/models/train_model.py --split_id 1
     deps:
+    - path: data/training_data_splits_by_year
+      hash: md5
+      md5: 2a251d05f13facc65ab581d8fe0126a3.dir
+      size: 316565387
+      nfiles: 37
     - path: params.yaml
       hash: md5
-      md5: 0487478f40dae05a1678e164e122a8ea
-      size: 270
-    - path: src/weather_au_mlops/config.py
+      md5: bd5506e54ec7768ff9b11a134496c94f
+      size: 1201
+    - path: src/models/train_model.py
       hash: md5
-      md5: bf25b2fa6dc91437212030446e3f9236
-      size: 506
-    - path: src/weather_au_mlops/train.py
-      hash: md5
-      md5: f3edb524b7001a4fe530e4aa97625c23
-      size: 1758
+      md5: 59e023eba7f1f7ff57b8cf2baaa8afe1
+      size: 12374
     outs:
-    - path: artifacts/metrics.json
+    - path: models/xgboost_model.pkl
       hash: md5
-      md5: 2b67ce6c573aea784feb3f36a349c840
-      size: 24
-    - path: artifacts/model.joblib
+      md5: 445ba3af40c02ccd6fd833f6f3f699fa
+      size: 585299
+  preprocess:
+    cmd: python src/data/preprocess.py
+    deps:
+    - path: data/raw/weatherAUS.csv
       hash: md5
-      md5: 299342bea40a98f809a2da0bfc8994d9
-      size: 1039
+      md5: a65cf8b8719b1a65db4f361eeec18457
+      size: 14094055
+    - path: params.yaml
+      hash: md5
+      md5: bd5506e54ec7768ff9b11a134496c94f
+      size: 1201
+    - path: src/data/preprocess.py
+      hash: md5
+      md5: 4efc81519df2ac90bb26970156c9a228
+      size: 9233
+    outs:
+    - path: data/interim/df_preprocessed.csv
+      hash: md5
+      md5: 59748fdd2b86623a74710ae8fcf84309
+      size: 13394376
+    - path: data/processed/X_test.csv
+      hash: md5
+      md5: 0d7e868688a0307790ec298941e2303e
+      size: 12258927
+    - path: data/processed/X_train.csv
+      hash: md5
+      md5: ca3274696d404a3ee780ee2fa03b6cf3
+      size: 49032036
+    - path: data/processed/y_test.csv
+      hash: md5
+      md5: 1ebd79af77dcc0f9eb918480651ce62e
+      size: 56329
+    - path: data/processed/y_train.csv
+      hash: md5
+      md5: 826d2047409c652609b1b79ad5b14091
+      size: 225271
+  prepare_splits:
+    cmd: python src/data/training_data_splits_by_year.py
+    deps:
+    - path: data/processed/X_test.csv
+      hash: md5
+      md5: 0d7e868688a0307790ec298941e2303e
+      size: 12258927
+    - path: data/processed/X_train.csv
+      hash: md5
+      md5: ca3274696d404a3ee780ee2fa03b6cf3
+      size: 49032036
+    - path: data/processed/y_test.csv
+      hash: md5
+      md5: 1ebd79af77dcc0f9eb918480651ce62e
+      size: 56329
+    - path: data/processed/y_train.csv
+      hash: md5
+      md5: 826d2047409c652609b1b79ad5b14091
+      size: 225271
+    - path: params.yaml
+      hash: md5
+      md5: bd5506e54ec7768ff9b11a134496c94f
+      size: 1201
+    - path: src/data/training_data_splits_by_year.py
+      hash: md5
+      md5: 9de4e29e716530ed24d32bfba2004678
+      size: 7020
