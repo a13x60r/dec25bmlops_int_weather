@@ -1,7 +1,7 @@
 schema: '2.0'
 stages:
   train:
-    cmd: set PYTHONPATH=src && python -m weather_au_mlops.train
+    cmd: python -m weather_au_mlops.train
     deps:
     - path: params.yaml
       hash: md5
@@ -18,9 +18,9 @@ stages:
     outs:
     - path: artifacts/metrics.json
       hash: md5
-      md5: 20e3651f330028b22da5af84bb8ea54a
-      size: 26
+      md5: 2b67ce6c573aea784feb3f36a349c840
+      size: 24
     - path: artifacts/model.joblib
       hash: md5
-      md5: 3210a3884e7375bbea9f5bb24d043a5a
+      md5: 299342bea40a98f809a2da0bfc8994d9
       size: 1039

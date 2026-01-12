@@ -1,6 +1,6 @@
 stages:
   train:
-    cmd: set PYTHONPATH=src && python -m weather_au_mlops.train
+    cmd: python -m weather_au_mlops.train
     deps:
       - src/weather_au_mlops/train.py
       - src/weather_au_mlops/config.py
