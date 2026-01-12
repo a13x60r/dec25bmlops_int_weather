@@ -5,8 +5,8 @@ stages:
     deps:
     - path: params.yaml
       hash: md5
-      md5: 0487478f40dae05a1678e164e122a8ea
-      size: 270
+      md5: 1202ecd8e52f209cfdab06a55a46ed5f
+      size: 1149
     - path: src/weather_au_mlops/config.py
       hash: md5
       md5: bf25b2fa6dc91437212030446e3f9236
