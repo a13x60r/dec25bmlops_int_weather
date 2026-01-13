@@ -91,6 +91,7 @@ data/raw/*
 data/processed/
 data/interim/
 data/external/
+data/training_data_splits_by_year/
 
 # Mac OS-specific storage files
 .DS_Store
