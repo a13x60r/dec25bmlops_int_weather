@@ -1,19 +1,155 @@
 Weather Forecast in Australia — MLOps
 ====================================
 
-This project is an **MLOps-oriented weather forecasting system** based on Australian daily weather observations.  
+This project is an **MLOps-oriented weather forecasting system** based on Australian daily weather observations.
 It extends the classic *cookiecutter data science* structure with **data versioning, experiment tracking, CI/CD, deployment, and monitoring**.
 
-Primary ML task: **RainTomorrow (binary classification)**  
-Secondary (optional): temperature, wind, and time-series forecasting.
-
-Dataset:  
-https://www.kaggle.com/jsphyg/weather-dataset-rattle-package
+*   **Primary Task:** RainTomorrow (binary classification)
+*   **Dataset:** [Kaggle - Weather Dataset Rattle Package](https://www.kaggle.com/jsphyg/weather-dataset-rattle-package)
 
 ---
 
-Project Organization
---------------------
+## Table of Contents
+- [MLOps Stack](#mlops-stack)
+- [Configuration](#configuration)
+- [Usage Guide](#usage-guide)
+  - [Option A: Run Locally](#option-a-run-locally)
+  - [Option B: Run with Docker](#option-b-run-with-docker)
+- [Development & Testing](#development--testing)
+  - [Code Quality & Tests](#code-quality--tests)
+  - [Manual Execution](#manual-execution)
+- [Key Metrics](#key-metrics)
+- [Project Organization](#project-organization)
+- [References](#references)
+
+---
+
+## MLOps Stack
+
+| Tool | Purpose |
+| :--- | :--- |
+| - [x] **DVC + DAGsHub** | Data & pipeline versioning |
+| - [x] **MLflow** | Experiment tracking & model registry |
+| - [ ] **Weights & Biases** | Experiment comparison & dashboards |
+| - [ ] **Docker** | Reproducible environments |
+| - [ ] **Airflow** | Pipeline orchestration |
+| - [ ] **BentoML** | Model serving |
+| - [ ] **Jenkins** | CI/CD |
+| - [ ] **Prometheus/Grafana** | Monitoring & drift |
+
+---
+
+## Configuration
+
+**Crucial Step:** Before running the project (Locally or Docker), you must configure access to the data storage.
+
+1.  **System Requirements**:
+    *   Python 3.11+ (Local only)
+    *   Docker Engine (Docker only)
+
+2.  **DVC Credentials**:
+    *   Navigate to `.dvc/` directory.
+    *   Rename `!config.local` to `config.local`.
+    *   Edit `config.local` with your credentials:
+        ```ini
+        user = <your-dagshub-username>
+        password = <your-dagshub-token-or-password>
+        ```
+    *   *Note:* `config.local` is git-ignored to protect secrets.
+
+---
+
+## Usage Guide
+
+### Option A: Run Locally
+
+1.  **Setup Environment**:
+    ```powershell
+    # Create and Activate Venv (Windows)
+    python -m venv venv
+    .\venv\Scripts\Activate
+    
+    # Install Dependencies
+    pip install -e .
+    pip install -r requirements.txt
+    ```
+
+2.  **Run Pipeline**:
+    Reproduce the full DVC pipeline (trains model, updates artifacts):
+    ```bash
+    dvc repro
+    ```
+
+### Option B: Run with Docker
+
+1.  **Build & Start Services**:
+    ```bash
+    docker compose build
+    docker compose up -d
+    ```
+    *   **MLflow UI**: [http://localhost:5000](http://localhost:5000)
+    *   **MinIO Console**: [http://localhost:9001](http://localhost:9001)
+
+2.  **Run Training**:
+    *   **Via Service**: `docker compose --profile train up`
+    *   **Via Dev Container (Recommended)**:
+        ```bash
+        docker compose up -d dev
+        docker compose exec dev dvc repro
+        ```
+
+---
+
+## Development & Testing
+
+### Code Quality & Tests
+Ensure your code is clean and stable before committing.
+
+*   **Run Tests**:
+    ```bash
+    pytest
+    ```
+*   **Linting**:
+    ```bash
+    ruff check .
+    ```
+*   **Pre-commit Hooks**:
+    ```bash
+    pre-commit install
+    ```
+
+### Manual Execution
+If you need to run specific scripts without the full DVC pipeline:
+
+**Local:**
+```bash 
+# Train 
+python src/models/train_model.py
+
+# Predict
+python src/models/predict_model.py
+```
+
+**Docker:**
+Execute the scripts inside the `dev` container:
+```bash
+# Train
+docker compose exec dev python src/models/train_model.py
+
+# Predict
+docker compose exec dev python src/models/predict_model.py
+```
+
+---
+
+## Key Metrics
+The pipeline tracks the following metrics for model evaluation:
+-   **Classification:** ROC-AUC, F1, Precision, Recall, PR-AUC
+-   **MLOps:** Latency (p95), error rate, data drift (PSI / KS)
+
+---
+
+## Project Organization
 
     ├── LICENSE
     ├── README.md              <- Project overview and instructions
@@ -25,42 +161,22 @@ Project Organization
     │   └── raw                <- Original immutable data
     │
     ├── logs                   <- Training, inference, and pipeline logs
-    │
     ├── models                 <- Serialized models and predictions
-    │
     ├── notebooks              <- Jupyter notebooks (EDA, experiments)
-    │   └── 1.0-*-initial-eda.ipynb
-    │
     ├── references             <- Data dictionaries, BOM docs, specs
-    │
     ├── reports                <- Analysis reports
-    │   └── figures            <- Generated plots and visual assets
-    │
     ├── artifacts              <- MLflow/DVC outputs (metrics, artifacts)
-    │
     ├── docker                 <- Dockerfiles and compose configs
     │
     ├── dvc.yaml               <- Reproducible ML pipeline definition
     ├── params.yaml            <- Model and data parameters
-    │
     ├── requirements.txt       <- Pinned Python dependencies
     │
     ├── src                    <- Source code
-    │   ├── __init__.py
-    │   │
     │   ├── data               <- Data ingestion and validation
-    │   │   └── make_dataset.py
-    │   │
     │   ├── features           <- Feature engineering
-    │   │   └── build_features.py
-    │   │
     │   ├── models             <- Training and inference
-    │   │   ├── train_model.py
-    │   │   └── predict_model.py
-    │   │
     │   ├── visualization      <- EDA and reporting plots
-    │   │   └── visualize.py
-    │   │
     │   └── config             <- Model, training, and infra configs
     │
     ├── tests                  <- Unit and pipeline smoke tests
@@ -68,121 +184,6 @@ Project Organization
 
 ---
 
-Run Locally (Virtual Environment)
----------------------------------
-
-If you prefer to run the project without Docker, follow these steps:
-
-### 1. Create and Activate Virtual Environment
-
-**Windows (PowerShell):**
-```powershell
-# Create venv
-python -m venv venv
-
-# Activate venv
-.\venv\Scripts\Activate
-```
-
-**Linux/macOS:**
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### 2. Install Dependencies
-Install the package in **editable mode** (crucial for local development) and all requirements:
-```bash
-pip install -e .
-pip install -r requirements.txt
-```
-
-### 3. Run DVC Pipeline
-Reproduce the pipeline to train the model and generate artifacts:
-```bash
-dvc repro
-```
-*Ensure you have configured your DVC credentials in `.dvc/config.local` as described below.*
-
-### 4. Run Training Manually (Optional)
-If you wish to run only the training script without checking the full DVC pipeline:
-```bash
-python -m weather_au_mlops.train
-```
-
----
-
-Run with Docker Compose
------------------------
-
-### 1. Configure DVC Credentials
-To access data from version control, you must configure your DVC remote credentials:
-1.  Navigate to the `.dvc` folder in the project root.
-2.  Rename the file `!config.local` to `config.local` (remove the `!` exclamation mark).
-    - *Note:* Do not commit `config.local` to version control as it contains secrets.
-3.  Open `config.local` and enter your DagsHub credentials:
-    ```ini
-    user = <your-dagshub-username>
-    password = <your-dagshub-token-or-password>
-    ```
-
-### 2. Run the Application
-Start the entire infrastructure (MLflow, MinIO, PostgreSQL) and the development container:
-```bash
-docker compose up -d
-```
-You can access the services at:
-- **MLflow UI**: [http://localhost:5000](http://localhost:5000)
-- **MinIO Console**: [http://localhost:9001](http://localhost:9001)
-
-To run the training pipeline specifically:
-```bash
-docker compose --profile train up
-```
-
-
-### 3. Run DVC Pipeline in Docker
-To run the full reproducible pipeline (which updates `dvc.lock` and ensures data consistency), use the `dev` service:
-1.  Ensure the dev container is running:
-    ```bash
-    docker compose up -d dev
-    ```
-2.  Execute the reproduction command inside the container:
-    ```bash
-    docker compose exec dev dvc repro
-    ```
-    *Note: This mounts your local directory, so artifacts generated inside the container (like `models/`) will appear on your host machine.*
-
----
-
-MLOps Stack
------------
-- **DVC + DAGsHub** — data & pipeline versioning  
-- **MLflow** — experiment tracking & model registry  
-- **Weights & Biases** — experiment comparison & dashboards  
-- **Docker** — reproducible environments  
-- **Airflow** — pipeline orchestration  
-- **BentoML** — model serving  
-- **Jenkins** — CI/CD  
-- **Prometheus + Grafana** — monitoring & drift  
-- **Kubernetes** — scalable deployment  
-
----
-
-Key Metrics
------------
-- **Classification:** ROC-AUC, F1, Precision, Recall, PR-AUC  
-- **Regression (optional):** RMSE, MAE  
-- **MLOps:** latency (p95), error rate, data drift (PSI / KS)
-
----
-
-References
-----------
-- Australian Bureau of Meteorology: http://www.bom.gov.au/climate/data  
-- Example repo: https://github.com/DataScientest-Studio/dec25bmlops_int_weather  
-
----
-
-Project based on the  
-[cookiecutter data science project template](https://drivendata.github.io/cookiecutter-data-science/).
+## References
+-   **Data Source**: [BOM Climate Data](http://www.bom.gov.au/climate/data)
+-   **Template**: [Cookiecutter Data Science](https://drivendata.github.io/cookiecutter-data-science/)
