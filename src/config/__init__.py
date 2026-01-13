@@ -16,3 +16,10 @@ def load_params():
 PARAMS = load_params()
 MONGO_URI = os.getenv('MONGO_URI', 'mongodb://admin:password123@localhost:27017')
 MLFLOW_URI = os.getenv('MLFLOW_TRACKING_URI', 'http://localhost:5000')
+
+# S3/MinIO Configuration for local dev
+if not os.getenv('MLFLOW_S3_ENDPOINT_URL'):
+    os.environ['MLFLOW_S3_ENDPOINT_URL'] = 'http://localhost:9000'
+    os.environ['AWS_ACCESS_KEY_ID'] = 'minio'
+    os.environ['AWS_SECRET_ACCESS_KEY'] = 'minio12345'
+    os.environ['AWS_DEFAULT_REGION'] = 'us-east-1'

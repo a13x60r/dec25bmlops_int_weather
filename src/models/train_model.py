@@ -29,12 +29,14 @@ from mlflow.tracking import MlflowClient
 
 # Import params from params.yaml
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-from src.config import PARAMS
+from src.config import PARAMS, MLFLOW_URI
 
+# Fix Windows Unicode handling
+sys.stdout.reconfigure(encoding='utf-8')
 
 # MLFlow configuration
-MLFLOW_TRACKING_URI = "http://127.0.0.1:5000"
-EXPERIMENT_NAME = "WeatherAUS_YearBased_Training"
+MLFLOW_TRACKING_URI = MLFLOW_URI
+EXPERIMENT_NAME = PARAMS['mlflow']['experiment_name']
 MODEL_NAME = "RainTomorrow_XGBoost"
 
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)

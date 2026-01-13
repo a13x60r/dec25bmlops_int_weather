@@ -1,26 +1,70 @@
 schema: '2.0'
 stages:
   train:
-    cmd: python -m weather_au_mlops.train
+    cmd: python src/models/train_model.py --split_id 1
     deps:
+    - path: data/training_data_splits_by_year
+      hash: md5
+      md5: b600b0f56bf44523a0dd09f6b7886e78.dir
+      size: 318027264
+      nfiles: 37
     - path: params.yaml
       hash: md5
-      md5: 1202ecd8e52f209cfdab06a55a46ed5f
-      size: 1149
-    - path: src/weather_au_mlops/config.py
+      md5: a542d93f91cb8ac73361403d301c3ea5
+      size: 1153
+    - path: src/models/train_model.py
       hash: md5
-      md5: bf25b2fa6dc91437212030446e3f9236
-      size: 506
-    - path: src/weather_au_mlops/train.py
-      hash: md5
-      md5: f3edb524b7001a4fe530e4aa97625c23
-      size: 1758
+      md5: d35aa8d045d86ddceee6c63a403bc301
+      size: 12337
     outs:
-    - path: artifacts/metrics.json
+    - path: models/xgboost_model.pkl
       hash: md5
-      md5: 20e3651f330028b22da5af84bb8ea54a
-      size: 26
-    - path: artifacts/model.joblib
+      md5: 445ba3af40c02ccd6fd833f6f3f699fa
+      size: 585299
+  process:
+    cmd: python src/data/preprocess.py
+    deps:
+    - path: data/raw/weatherAUS.csv
       hash: md5
-      md5: 40138ba8e4842e57ef3df7e2fdc4bb5d
-      size: 991
+      md5: a65cf8b8719b1a65db4f361eeec18457
+      size: 14094055
+    - path: params.yaml
+      hash: md5
+      md5: a542d93f91cb8ac73361403d301c3ea5
+      size: 1153
+    - path: src/data/preprocess.py
+      hash: md5
+      md5: 3742e43e78ce0236f407b47b225bb481
+      size: 8841
+    outs:
+    - path: data/interim/df_preprocessed.csv
+      hash: md5
+      md5: 9e62f566c399452c7efac3ed4d92348a
+      size: 13535164
+    - path: data/processed
+      hash: md5
+      md5: 1e1db19afe9bbaedd7698f560fb65866.dir
+      size: 61854141
+      nfiles: 4
+  prepare_splits:
+    cmd: python src/data/training_data_splits_by_year.py
+    deps:
+    - path: data/processed
+      hash: md5
+      md5: 1e1db19afe9bbaedd7698f560fb65866.dir
+      size: 61854141
+      nfiles: 4
+    - path: params.yaml
+      hash: md5
+      md5: a542d93f91cb8ac73361403d301c3ea5
+      size: 1153
+    - path: src/data/training_data_splits_by_year.py
+      hash: md5
+      md5: 9de4e29e716530ed24d32bfba2004678
+      size: 7020
+    outs:
+    - path: data/training_data_splits_by_year
+      hash: md5
+      md5: b600b0f56bf44523a0dd09f6b7886e78.dir
+      size: 318027264
+      nfiles: 37

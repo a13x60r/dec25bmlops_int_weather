@@ -92,7 +92,9 @@ print('Preproecssing Step 4: Changed in RainTomorrow and RainToday columns No to
 
 
 # Save dataset in interim folder
-df.to_csv('data/interim/df_preprocessed.csv', index=False)
+output_path = Path('data/interim/df_preprocessed.csv')
+output_path.parent.mkdir(parents=True, exist_ok=True)
+df.to_csv(output_path, index=False)
 
 print('Saved: data/interim/df_preprocessed.csv')
 print('Columns: ', df.columns)
@@ -194,7 +196,10 @@ print('Preprocessing Step 8: Scaling of numerical columns using StandardScaler.'
 
 
 # Save modeling datasets in data/processed
-X_train.to_csv('data/processed/X_train.csv', index=False)
+processed_dir = Path('data/processed')
+processed_dir.mkdir(parents=True, exist_ok=True)
+
+X_train.to_csv(processed_dir / 'X_train.csv', index=False)
 y_train.to_csv('data/processed/y_train.csv', index=False, header=True)
 
 X_test.to_csv('data/processed/X_test.csv', index=False)
