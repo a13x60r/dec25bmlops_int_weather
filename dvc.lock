@@ -19,8 +19,8 @@ stages:
     outs:
     - path: models/xgboost_model.pkl
       hash: md5
-      md5: 445ba3af40c02ccd6fd833f6f3f699fa
-      size: 585299
+      md5: 6515a19ddb020745e5a2432b0ee75cd9
+      size: 584415
   process:
     cmd: python src/data/preprocess.py
     deps:
