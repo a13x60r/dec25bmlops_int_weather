@@ -1,7 +1,5 @@
-# Data parameters
 data:
   raw_csv: data/raw/weatherAUS.csv
-
   interim_csv: data/interim/df_preprocessed.csv
   processed_dir: data/processed
   X_train: data/processed/X_train.csv
@@ -10,21 +8,17 @@ data:
   y_test: data/processed/y_test.csv
   test_size: 0.2
   random_state: 42
-  split_id: 1
-
-# Model parameters
+  split_id: 2
 model:
-  type: xgboost                   # From LazyClassifier 
-  max_depth: 9                    # From GridSearch
-  learning_rate: 0.05             # From GridSearch
-  n_estimators: 200               # From GridSearch
-  colsample_bytree: 0.8           # From GridSearch
-  subsample: 0.7                  # From GridSearch
-  gamma: 0.1                      # From GridSearch
-  min_child_weight: 3             # From GridSearch
+  type: xgboost
+  max_depth: 9
+  learning_rate: 0.05
+  n_estimators: 200
+  colsample_bytree: 0.8
+  subsample: 0.7
+  gamma: 0.1
+  min_child_weight: 3
   random_state: 42
-
-# Database (noSQL - MongoDB)
 database:
   host: mongodb
   port: 27017
@@ -32,13 +26,10 @@ database:
   password: password123
   db_name: weather_db
   collection: weather_data
-
-# MLFlow
 mlflow:
   tracking_uri: http://mlflow:5000
   experiment_name: weather-au-rain
-
-# Features
 features:
   target: RainTomorrow
-  drop_cols: ["RISK_MM"]
+  drop_cols:
+  - RISK_MM

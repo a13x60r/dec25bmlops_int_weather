@@ -19,7 +19,7 @@ stages:
       - data/training_data_splits_by_year
 
   train:
-    cmd: python src/models/train_model.py --split_id 1
+    cmd: python src/models/train_model.py
     deps:
       - src/models/train_model.py
       - data/training_data_splits_by_year
