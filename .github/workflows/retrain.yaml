@@ -1,0 +1,60 @@
+name: Scheduled Retraining
+
+on:
+  schedule:
+    # Run at 00:00 every Sunday
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.11"
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install dvc[all]
+        
+    - name: Setup DVC configuration
+      run: |
+        dvc remote modify --local origin.dags user ${{ secrets.DAGSHUB_USERNAME }}
+        dvc remote modify --local origin.dags password ${{ secrets.DAGSHUB_TOKEN }}
+        # Alternatively if using config.local replacement:
+        # echo "['origin.dags']" > .dvc/config.local
+        # echo "user = ${{ secrets.DAGSHUB_USERNAME }}" >> .dvc/config.local
+        # echo "password = ${{ secrets.DAGSHUB_TOKEN }}" >> .dvc/config.local
+      env:
+        DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
+        DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+
+    - name: Pull Data
+      run: dvc pull
+      env:
+        DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
+        DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+        
+    - name: Run Training Pipeline
+      run: dvc repro
+      
+    - name: Commit and Push Changes (Optional)
+      # Only keep this if you want to push back dvc.lock updates
+      # Requires setting up a bot or PAT usually for push to protected branches
+      run: |
+        git config --global user.name 'GitHub Actions'
+        git config --global user.email 'actions@github.com'
+        git add dvc.lock
+        # git commit -m "chore: Update dvc.lock from scheduled retraining" || echo "No changes to commit"
+        # git push
