@@ -32,7 +32,7 @@ It extends the classic *cookiecutter data science* structure with **data version
 | - [x] **MLflow** | Experiment tracking & model registry |
 | - [ ] **Weights & Biases** | Experiment comparison & dashboards |
 | - [ ] **Docker** | Reproducible environments |
-| - [ ] **Airflow** | Pipeline orchestration |
+| - [x] **Airflow** | Pipeline orchestration |
 | - [ ] **BentoML** | Model serving |
 | - [ ] **Jenkins** | CI/CD |
 | - [ ] **Prometheus/Grafana** | Monitoring & drift |
@@ -97,6 +97,16 @@ It extends the classic *cookiecutter data science* structure with **data version
         docker compose up -d dev
         docker compose exec dev dvc repro
         ```
+
+3.  **Run with Airflow Orchestration**:
+    *   **Access UI**: [http://localhost:8081](http://localhost:8081)
+        *   User/Pass: `airflow/airflow`
+    *   **Workflow**:
+        *   **`data_update_pipeline`**: Producer DAG. Simulates new data arrival.
+        *   **`weather_retrain_pipeline`**: Consumer DAG. Automatically triggers `dvc repro` when data updates.
+    *   **Key Directories**:
+        *   `dags/`: Your Python DAG files.
+        *   `logs/`: Airflow execution logs.
 
 ---
 
