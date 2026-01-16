@@ -65,7 +65,10 @@ Project Organization
     │
     ├── tests                  <- Unit and pipeline smoke tests
     ├── docker-compose.yml     <- Local MLflow / infra services
-    └── Jenkinsfile            <- CI pipeline definition
+    ├── docker-compose.jenkins.yml <- Local Jenkins service
+    ├── Jenkinsfile            <- CI pipeline definition
+    ├── Dockerfile.dev         <- Configured for CI (snapshot code) & Local (volume mount)
+    └── Dockerfile.jenkins     <- Custom Jenkins image setup
 
 ---
 
@@ -170,6 +173,13 @@ This project includes a `Jenkinsfile` for declarative Jenkins pipelines. The pip
 1.  Create a "Pipeline" job in Jenkins.
 2.  Connect it to your Git repository.
 3.  The `Jenkinsfile` will be automatically detected.
+
+### Run Jenkins Locally
+To test the full CI environment locally:
+```bash
+docker compose -f docker-compose.jenkins.yml up -d --build
+```
+Access Jenkins at [http://localhost:8080](http://localhost:8080).
 
 ---
 
