@@ -1,6 +1,7 @@
 # Data parameters
 data:
   raw_csv: data/raw/weatherAUS.csv
+  n_samples: null # Set to integer (e.g., 1000) for smoke testing
 
   interim_csv: data/interim/df_preprocessed.csv
   processed_dir: data/processed

@@ -29,6 +29,12 @@ RANDOM_STATE = PARAMS['data']['random_state']
 # Import raw data
 df = pd.read_csv('data/raw/weatherAUS.csv')
 
+# SMOKE TEST: Sample data if n_samples is set
+if 'n_samples' in PARAMS['data'] and PARAMS['data']['n_samples']:
+    n_samples = int(PARAMS['data']['n_samples'])
+    print(f"SMOKE TEST ENABLED: limiting to {n_samples} samples")
+    df = df.head(n_samples)
+
 print('Data imported: data/raw/weatherAUS.csv')
 print('Columns present: ', df.columns)
 

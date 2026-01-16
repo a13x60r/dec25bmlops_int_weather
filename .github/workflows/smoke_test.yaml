@@ -1,0 +1,57 @@
+name: DVC Smoke Test
+
+on:
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install dvc[all]
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Configure DVC for Smoke Test
+      run: |
+        # 1. Modify params.yaml to use small sample size and fast training settings
+        # Use sed to replace null with 1000 for n_samples
+        sed -i 's/n_samples: null/n_samples: 1000/' params.yaml
+        
+        # Make model training instantaneous
+        # n_estimators: 200 -> n_estimators: 1
+        sed -i 's/n_estimators: 200/n_estimators: 1/' params.yaml
+        # max_depth: 9 -> max_depth: 2
+        sed -i 's/max_depth: 9/max_depth: 2/' params.yaml
+
+        cat params.yaml
+
+    - name: Setup DVC remote (Authentication)
+      env:
+        DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
+        DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+      run: |
+        dvc remote modify --local origin.dags user $DAGSHUB_USERNAME
+        dvc remote modify --local origin.dags password $DAGSHUB_TOKEN
+
+    - name: Pull Data
+      # We only need the raw data for the smoke test to start the pipeline
+      # If your raw data is huge, you might want to cache it or use a smaller version tracked in git
+      run: dvc pull data/raw/weatherAUS.csv
+
+    - name: Run DVC Pipeline (Smoke Mode)
+      run: |
+        # Force reproduction of the entire pipeline
+        dvc repro --force
