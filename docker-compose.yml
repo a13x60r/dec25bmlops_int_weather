@@ -111,6 +111,7 @@ services:
       AWS_DEFAULT_REGION: us-east-1
       WANDB_PROJECT: weather-au-mlops
       WANDB_MODE: online
+      OPENWEATHER_API_KEY: "2382ead9008d54d34ff156b1bbe44f6d"
     volumes:
       - ./:/workspace
       - pip_cache:/root/.cache/pip
