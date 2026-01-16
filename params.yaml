@@ -10,6 +10,7 @@ data:
   y_test: data/processed/y_test.csv
   test_size: 0.2
   random_state: 42
+  split_id: 1
 
 # Model parameters
 model:
