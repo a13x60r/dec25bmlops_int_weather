@@ -15,5 +15,7 @@ COPY pyproject.toml /workspace/pyproject.toml
 COPY ruff.toml /workspace/ruff.toml
 COPY pytest.ini /workspace/pytest.ini
 
+COPY . /workspace
+
 RUN python -m pip install --upgrade pip && pip install -r /workspace/requirements.txt
 RUN pip install -e /workspace || true

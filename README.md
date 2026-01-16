@@ -64,7 +64,8 @@ Project Organization
     │   └── config             <- Model, training, and infra configs
     │
     ├── tests                  <- Unit and pipeline smoke tests
-    └── docker-compose.yml     <- Local MLflow / infra services
+    ├── docker-compose.yml     <- Local MLflow / infra services
+    └── Jenkinsfile            <- CI pipeline definition
 
 ---
 
@@ -152,6 +153,23 @@ To run the full reproducible pipeline (which updates `dvc.lock` and ensures data
     docker compose exec dev dvc repro
     ```
     *Note: This mounts your local directory, so artifacts generated inside the container (like `models/`) will appear on your host machine.*
+
+---
+
+Continuous Integration (CI)
+---------------------------
+
+This project includes a `Jenkinsfile` for declarative Jenkins pipelines. The pipeline is designed to be **Docker-first**, ensuring that CI tests run in the exact same environment as local development.
+
+### Jenkins Pipeline Stages
+1.  **Build DEV Image**: Builds `weather-au-mlops-dev` using `Dockerfile.dev`.
+2.  **Lint**: Runs `ruff check .` inside the container.
+3.  **Test**: Runs `pytest` inside the container.
+
+### Setup
+1.  Create a "Pipeline" job in Jenkins.
+2.  Connect it to your Git repository.
+3.  The `Jenkinsfile` will be automatically detected.
 
 ---
 
