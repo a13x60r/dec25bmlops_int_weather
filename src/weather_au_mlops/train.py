@@ -1,13 +1,11 @@
 import json
-from pathlib import Path
 
 import joblib
+import mlflow
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
-
-import mlflow
 
 from weather_au_mlops.config import MLFLOW_EXPERIMENT_NAME, MLFLOW_TRACKING_URI, Paths
 
