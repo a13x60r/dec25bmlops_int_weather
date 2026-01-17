@@ -57,7 +57,12 @@ It extends the classic *cookiecutter data science* structure with **data version
         ```
     *   *Note:* `config.local` is git-ignored to protect secrets.
 
-3.  **Weather API (Optional)**:
+3.  **CI/CD Configuration (GitHub Actions)**:
+    *   To enable automated testing with real data in CI, you must add the following **Repository Secrets** in GitHub:
+        *   `DAGSHUB_USERNAME`: Your DagsHub username
+        *   `DAGSHUB_TOKEN`: Your DagsHub access token (or password)
+
+4.  **Weather API (Optional)**:
     *   The project uses OpenWeatherMap for live data.
     *   Key is pre-configured in `docker-compose.yml` (Free Tier).
     *   To use your own: Set `OPENWEATHER_API_KEY` in `docker-compose.yml` or `.env`.

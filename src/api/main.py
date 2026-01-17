@@ -32,7 +32,7 @@ async def load_model():
         with open(MODEL_PATH, "rb") as f:
             model = pickle.load(f)
         print(f"Model loaded from {MODEL_PATH}")
-    except:
+    except Exception:
         print("No model found. Please train first.")
 
 

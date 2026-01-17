@@ -19,7 +19,7 @@ import yaml
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.config import PARAMS
+from src.config import PARAMS  # noqa: E402
 
 # Get parameters
 TEST_SIZE = PARAMS["data"]["test_size"]
