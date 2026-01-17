@@ -34,7 +34,7 @@ with DAG(
         image="dec25bmlops_int_weather-trainer:latest",
         api_version="auto",
         auto_remove=True,
-        command='bash -lc "dvc repro && dvc push"',
+        command='bash -lc "dvc remote modify origin --local access_key_id $DAGSHUB_USERNAME && dvc remote modify origin --local secret_access_key $DAGSHUB_TOKEN && dvc repro && dvc push"',
         docker_url="unix://var/run/docker.sock",
         network_mode="dec25bmlops_int_weather_default",
         mounts=[
@@ -48,6 +48,7 @@ with DAG(
         environment={
             "MLFLOW_TRACKING_URI": "http://mlflow:5000",
             "MLFLOW_S3_ENDPOINT_URL": "http://minio:9000",
+            # MinIO credentials for MLflow
             "AWS_ACCESS_KEY_ID": "minio",
             "AWS_SECRET_ACCESS_KEY": "minio12345",
             "AWS_DEFAULT_REGION": "us-east-1",

@@ -47,20 +47,16 @@ It extends the classic *cookiecutter data science* structure with **data version
     *   Python 3.11+ (Local only)
     *   Docker Engine (Docker only)
 
-2.  **DVC Credentials**:
-    *   Navigate to `.dvc/` directory.
-    *   Rename `!config.local` to `config.local`.
-    *   Edit `config.local` with your credentials:
-        ```ini
-        user = <your-dagshub-username>
-        password = <your-dagshub-token-or-password>
-        ```
-    *   *Note:* `config.local` is git-ignored to protect secrets.
+6.  **DVC Credentials**:
+    *   **Local Development**:
+        *   Ensure `DAGSHUB_USERNAME` and `DAGSHUB_TOKEN` are in your `.env` file.
+        *   This allows you to push/pull data locally via the S3 remote.
 
-3.  **CI/CD Configuration (GitHub Actions)**:
-    *   To enable automated testing with real data in CI, you must add the following **Repository Secrets** in GitHub:
-        *   `DAGSHUB_USERNAME`: Your DagsHub username
-        *   `DAGSHUB_TOKEN`: Your DagsHub access token (or password)
+7.  **CI/CD Configuration (GitHub Actions)**:
+    *   **CI & Release Pipelines**: Configured to use public HTTPS access for reading data. **No secrets required** for these workflows to pass.
+    *   **Airflow / Training**: To enable the training pipeline to *push* new models/data, you must configure the following in your Airflow Variables (or `.env` for Docker):
+        *   `DAGSHUB_USERNAME`
+        *   `DAGSHUB_TOKEN`
 
 4.  **Weather API (Optional)**:
     *   The project uses OpenWeatherMap for live data.
