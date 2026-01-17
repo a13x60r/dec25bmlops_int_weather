@@ -68,7 +68,7 @@ It extends the classic *cookiecutter data science* structure with **data version
     # Create and Activate Venv (Windows)
     python -m venv venv
     .\venv\Scripts\Activate
-    
+
     # Install Dependencies
     pip install -e .
     pip install -r requirements.txt
@@ -122,8 +122,8 @@ Ensure your code is clean and stable before committing.
 If you need to run specific scripts without the full DVC pipeline:
 
 **Local:**
-```bash 
-# Train 
+```bash
+# Train
 python src/models/train_model.py
 
 # Predict
