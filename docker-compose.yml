@@ -112,11 +112,13 @@ services:
       WANDB_PROJECT: weather-au-mlops
       WANDB_MODE: online
       OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY}
+      DAGSHUB_USERNAME: ${DAGSHUB_USERNAME}
+      DAGSHUB_TOKEN: ${DAGSHUB_TOKEN}
     volumes:
       - ./:/workspace
       - pip_cache:/root/.cache/pip
     working_dir: /workspace
-    command: [ "bash", "-lc", "pip install -e . && python -m weather_au_mlops.train" ]
+    command: [ "bash", "-lc", "pip install -e . && python src/models/train_model.py" ]
     profiles: [ "train" ]
 
   # -- Airflow Services --
