@@ -31,10 +31,10 @@ It extends the classic *cookiecutter data science* structure with **data version
 | - [x] **DVC + DAGsHub** | Data & pipeline versioning |
 | - [x] **MLflow** | Experiment tracking & model registry |
 | - [ ] **Weights & Biases** | Experiment comparison & dashboards |
-| - [ ] **Docker** | Reproducible environments |
+| - [x] **Docker** | Reproducible environments |
 | - [x] **Airflow** | Pipeline orchestration |
 | - [ ] **BentoML** | Model serving |
-| - [ ] **Jenkins** | CI/CD |
+| - [x] **Jenkins** | CI/CD |
 | - [ ] **Prometheus/Grafana** | Monitoring & drift |
 
 ---
