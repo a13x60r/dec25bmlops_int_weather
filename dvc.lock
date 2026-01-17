@@ -1,70 +1,70 @@
 schema: '2.0'
 stages:
   train:
-    cmd: python src/models/train_model.py --split_id 1
+    cmd: python src/models/train_model.py
     deps:
     - path: data/training_data_splits_by_year
       hash: md5
-      md5: b600b0f56bf44523a0dd09f6b7886e78.dir
-      size: 318027264
+      md5: 2a251d05f13facc65ab581d8fe0126a3.dir
+      size: 316565387
       nfiles: 37
     - path: params.yaml
       hash: md5
-      md5: a542d93f91cb8ac73361403d301c3ea5
-      size: 1153
+      md5: 9b649550700cadeb52bcf09d6903cebb
+      size: 796
     - path: src/models/train_model.py
       hash: md5
-      md5: d35aa8d045d86ddceee6c63a403bc301
-      size: 12337
+      md5: f1269cb768b8146a849c76a31bc1a360
+      size: 13965
     outs:
     - path: models/xgboost_model.pkl
       hash: md5
-      md5: 6515a19ddb020745e5a2432b0ee75cd9
-      size: 584415
+      md5: 01c3430974bc18e93d8c4ceadd590f65
+      size: 1412065
   process:
     cmd: python src/data/preprocess.py
     deps:
     - path: data/raw/weatherAUS.csv
       hash: md5
-      md5: a65cf8b8719b1a65db4f361eeec18457
-      size: 14094055
+      md5: 88b31ee88a6309f992051db3dbecfc78
+      size: 14098872
     - path: params.yaml
       hash: md5
-      md5: a542d93f91cb8ac73361403d301c3ea5
-      size: 1153
+      md5: 9b649550700cadeb52bcf09d6903cebb
+      size: 796
     - path: src/data/preprocess.py
       hash: md5
-      md5: 3742e43e78ce0236f407b47b225bb481
-      size: 8841
+      md5: 0f8eb2384584e5de269091e168828ce5
+      size: 8846
     outs:
     - path: data/interim/df_preprocessed.csv
       hash: md5
-      md5: 9e62f566c399452c7efac3ed4d92348a
-      size: 13535164
+      md5: 59748fdd2b86623a74710ae8fcf84309
+      size: 13394376
     - path: data/processed
       hash: md5
-      md5: 1e1db19afe9bbaedd7698f560fb65866.dir
-      size: 61854141
+      md5: d9d3df1564299c54b9b76aa346add9c5.dir
+      size: 61572563
       nfiles: 4
   prepare_splits:
     cmd: python src/data/training_data_splits_by_year.py
     deps:
     - path: data/processed
       hash: md5
-      md5: 1e1db19afe9bbaedd7698f560fb65866.dir
-      size: 61854141
+      md5: d9d3df1564299c54b9b76aa346add9c5.dir
+      size: 61572563
       nfiles: 4
     - path: params.yaml
       hash: md5
-      md5: a542d93f91cb8ac73361403d301c3ea5
-      size: 1153
+      md5: 9b649550700cadeb52bcf09d6903cebb
+      size: 796
     - path: src/data/training_data_splits_by_year.py
       hash: md5
-      md5: 9de4e29e716530ed24d32bfba2004678
-      size: 7020
+      md5: a3fd28206d76d9cde772e78316d5cc65
+      size: 6946
     outs:
     - path: data/training_data_splits_by_year
       hash: md5
-      md5: b600b0f56bf44523a0dd09f6b7886e78.dir
-      size: 318027264
+      md5: 2a251d05f13facc65ab581d8fe0126a3.dir
+      size: 316565387
       nfiles: 37

@@ -1,0 +1,59 @@
+'data\raw\weatherAUS.csv.dvc' didn't change, skipping
+Stage 'process' didn't change, skipping
+Stage 'prepare_splits' didn't change, skipping
+Running stage 'train':
+> python src/models/train_model.py
+C:\Users\aboro\miniconda3\Lib\site-packages\xgboost\training.py:199: UserWarning: [20:55:13] WARNING: C:\actions-runner\_work\xgboost\xgboost\src\learner.cc:790:
+Parameters: { "use_label_encoder" } are not used.
+
+  bst.update(dtrain, iteration=i, fobj=obj)
+C:\Users\aboro\miniconda3\Lib\site-packages\mlflow\types\utils.py:406: UserWarning: Hint: Inferred schema contains integer column(s). Integer columns in Python cannot represent missing values. If your input data contains missing values at inference time, it will be encoded as floats and will cause a schema enforcement error. The best way to avoid this problem is to infer the model schema based on a realistic data sample (training dataset) that includes missing values. Alternatively, you can declare integer columns as doubles (float64) whenever these columns may have missing values. See `Handling Integers With Missing Values <https://www.mlflow.org/docs/latest/models.html#handling-integers-with-missing-values>`_ for more details.
+  warnings.warn(
+C:\Users\aboro\miniconda3\Lib\site-packages\xgboost\sklearn.py:1118: UserWarning: [20:55:14] WARNING: C:\actions-runner\_work\xgboost\xgboost\src\c_api\c_api.cc:1575: Saving model in the UBJSON format as default.  You can use a file extension: `json` or `ubj` to choose between formats.
+  self.get_booster().save_model(fname)
+2026/01/16 20:55:18 WARNING mlflow.utils.requirements_utils: Detected one or more mismatches between the model's dependencies and the current Python environment:
+ - mlflow (current: 3.8.1, required: mlflow==2.14.1)
+To fix the mismatches, call `mlflow.pyfunc.get_model_dependencies(model_uri)` to fetch the model's environment and install dependencies using the resulting environment file.
+2026/01/16 20:55:18 WARNING mlflow.models.model: Logging model metadata to the tracking server has failed. The model artifacts have been logged successfully under mlflow-artifacts:/1/4b8a3e9fbfd44092bb38b072531c6e10/artifacts. Set logging level to DEBUG via `logging.getLogger("mlflow").setLevel(logging.DEBUG)` to see the full traceback.
+Registered model 'RainTomorrow_XGBoost' already exists. Creating a new version of this model...
+2026/01/16 20:55:18 INFO mlflow.store.model_registry.abstract_store: Waiting up to 300 seconds for model version to finish creation. Model name: RainTomorrow_XGBoost, version 14
+Created version '14' of model 'RainTomorrow_XGBoost'.
+No split_id provided via CLI, using value from params.yaml: 2
+Training on split 2 (MLflow mode)
+Loaded Split 2: split_02_2008-2009
+Train:  14984 samples
+Test:   28158 samples
+Current Production Model:
+Version: 12
+F1 Score: 0.6334
+MLflow Run Started: 4b8a3e9fbfd44092bb38b072531c6e10
+Applying SMOTE on training data.
+Before: {0: 11684, 1: 3300}
+After: {0: 11684, 1: 11684}
+Training XGBoost Model.
+Model parameters: {'max_depth': 9, 'learning_rate': 0.05, 'n_estimators': 200, 'colsample_bytree': 0.8, 'subsample': 0.7, 'gamma': 0.1, 'min_child_weight': 3, 'random_state': 42, 'eval_metric': 'logloss', 'use_label_encoder': False}
+XGBoost model trained.
+Model evaluation on test data.
+
+ Metrics:
+f1_score    : 0.6334
+accuracy    : 0.8402
+precision   : 0.6442
+recall      : 0.6229
+roc_auc     : 0.8632
+Model Comparison:
+Production (v12): F1 = 0.6334
+New Model: F1 = 0.6334
+Improvement: +0.00%
+Current model performs better.
+Logging model to MLflow.
+Registering model in Model Registry.
+Registered as version 14
+Keeping current production (v12)
+New model registered as v14 but not promoted
+New model did not improve performance. Keeping existing model.
+Trainng complete.
+F1 Score: 0.6334
+Promoted: No
+MLflow UI: http://localhost:5000
+ERROR: failed to reproduce 'train': output 'models\xgboost_model.pkl' does not exist

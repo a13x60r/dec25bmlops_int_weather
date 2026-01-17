@@ -32,7 +32,7 @@ It extends the classic *cookiecutter data science* structure with **data version
 | - [x] **MLflow** | Experiment tracking & model registry |
 | - [ ] **Weights & Biases** | Experiment comparison & dashboards |
 | - [ ] **Docker** | Reproducible environments |
-| - [ ] **Airflow** | Pipeline orchestration |
+| - [x] **Airflow** | Pipeline orchestration |
 | - [ ] **BentoML** | Model serving |
 | - [ ] **Jenkins** | CI/CD |
 | - [ ] **Prometheus/Grafana** | Monitoring & drift |
@@ -57,6 +57,11 @@ It extends the classic *cookiecutter data science* structure with **data version
         ```
     *   *Note:* `config.local` is git-ignored to protect secrets.
 
+3.  **Weather API (Optional)**:
+    *   The project uses OpenWeatherMap for live data.
+    *   Key is pre-configured in `docker-compose.yml` (Free Tier).
+    *   To use your own: Set `OPENWEATHER_API_KEY` in `docker-compose.yml` or `.env`.
+
 ---
 
 ## Usage Guide
@@ -68,7 +73,7 @@ It extends the classic *cookiecutter data science* structure with **data version
     # Create and Activate Venv (Windows)
     python -m venv venv
     .\venv\Scripts\Activate
-    
+
     # Install Dependencies
     pip install -e .
     pip install -r requirements.txt
@@ -98,6 +103,16 @@ It extends the classic *cookiecutter data science* structure with **data version
         docker compose exec dev dvc repro
         ```
 
+3.  **Run with Airflow Orchestration**:
+    *   **Access UI**: [http://localhost:8081](http://localhost:8081)
+        *   User/Pass: `airflow/airflow`
+    *   **Workflow**:
+        *   **`data_update_pipeline`**: Producer DAG. Fetches live data from OpenWeatherMap API (2.5/weather) and appends to dataset.
+        *   **`weather_retrain_pipeline`**: Consumer DAG. Automatically triggers `dvc repro` when data updates.
+    *   **Key Directories**:
+        *   `dags/`: Your Python DAG files.
+        *   `logs/`: Airflow execution logs.
+
 ---
 
 ## Development & Testing
@@ -122,8 +137,8 @@ Ensure your code is clean and stable before committing.
 If you need to run specific scripts without the full DVC pipeline:
 
 **Local:**
-```bash 
-# Train 
+```bash
+# Train
 python src/models/train_model.py
 
 # Predict

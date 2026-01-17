@@ -1,5 +1,5 @@
 :bar_chart: Project Plan: MLOps Roadmap
-Phase 0: Kick-off: Before November 14th 
+Phase 0: Kick-off: Before November 14th
 
 * :bookmark_tabs: Kick-Off Slides: https://docs.google.com/presentation/d/1qIjvUaZMwHl6vvmQfJErMwcwCs4BbyHja6v9Lk4RBWQ/edit#slide=id.g31a2ff139c2_0_0
 
@@ -58,4 +58,3 @@ Phase 5: Frontend :date: Deadline: Jan 30
     * 10-minutes Q&A with the jury
 * You can make the full presentation on the Streamlit application directly instead of slides.
 * Every member must talk during the presentation.
-

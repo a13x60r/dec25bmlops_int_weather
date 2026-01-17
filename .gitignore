@@ -129,3 +129,8 @@ logs/*.log
 .dvc/tmp
 .dvc/tmp/
 .dvc/tmp/*
+
+# Airflow
+logs/
+plugins/
+dags/__pycache__/

@@ -31,3 +31,4 @@ pre-commit==3.8.0
 python-dotenv==1.0.1
 
 pymongo==4.6.1
+requests==2.32.3
