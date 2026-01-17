@@ -32,47 +32,21 @@ pipeline {
             }
         }
 
-        stage('Update Dataset') {
+        stage('Run Tests') {
             steps {
                 script {
                     if (isUnix()) {
                         sh """
                         . venv/bin/activate
-                        python -c "import yaml; params = yaml.safe_load(open('params.yaml')); params['data']['split_id'] = params['data'].get('split_id', 1) + 1; yaml.dump(params, open('params.yaml', 'w'))"
-                        cat params.yaml
+                        pytest
                         """
                     } else {
                         bat """
                         call venv\\Scripts\\activate
-                        python -c "import yaml; params = yaml.safe_load(open('params.yaml')); params['data']['split_id'] = params['data'].get('split_id', 1) + 1; yaml.dump(params, open('params.yaml', 'w'))"
-                        type params.yaml
+                        pytest
                         """
                     }
                 }
-            }
-        }
-
-        stage('Reproduce Pipeline') {
-            steps {
-                script {
-                    if (isUnix()) {
-                        sh """
-                        . venv/bin/activate
-                        dvc repro
-                        """
-                    } else {
-                        bat """
-                        call venv\\Scripts\\activate
-                        dvc repro
-                        """
-                    }
-                }
-            }
-        }
-
-        stage('Archive Artifacts') {
-            steps {
-                archiveArtifacts artifacts: 'models/*.pkl, metrics.json, params.yaml', allowEmptyArchive: true
             }
         }
     }
