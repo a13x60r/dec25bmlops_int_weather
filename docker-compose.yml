@@ -165,6 +165,8 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       _PIP_ADDITIONAL_REQUIREMENTS: "apache-airflow-providers-docker"
+      AIRFLOW_VAR_DAGSHUB_USERNAME: ${DAGSHUB_USERNAME}
+      AIRFLOW_VAR_DAGSHUB_TOKEN: ${DAGSHUB_TOKEN}
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
@@ -194,6 +196,8 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       _PIP_ADDITIONAL_REQUIREMENTS: "apache-airflow-providers-docker"
+      AIRFLOW_VAR_DAGSHUB_USERNAME: ${DAGSHUB_USERNAME}
+      AIRFLOW_VAR_DAGSHUB_TOKEN: ${DAGSHUB_TOKEN}
     command: scheduler
     volumes:
       - ./dags:/opt/airflow/dags
