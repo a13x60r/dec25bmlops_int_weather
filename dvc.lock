@@ -60,8 +60,8 @@ stages:
       size: 796
     - path: src/data/training_data_splits_by_year.py
       hash: md5
-      md5: a3fd28206d76d9cde772e78316d5cc65
-      size: 6946
+      md5: b7bc947496372ddc7da9e61780cf2915
+      size: 6960
     outs:
     - path: data/training_data_splits_by_year
       hash: md5
