@@ -57,6 +57,11 @@ It extends the classic *cookiecutter data science* structure with **data version
         ```
     *   *Note:* `config.local` is git-ignored to protect secrets.
 
+3.  **Weather API (Optional)**:
+    *   The project uses OpenWeatherMap for live data.
+    *   Key is pre-configured in `docker-compose.yml` (Free Tier).
+    *   To use your own: Set `OPENWEATHER_API_KEY` in `docker-compose.yml` or `.env`.
+
 ---
 
 ## Usage Guide
@@ -102,7 +107,7 @@ It extends the classic *cookiecutter data science* structure with **data version
     *   **Access UI**: [http://localhost:8081](http://localhost:8081)
         *   User/Pass: `airflow/airflow`
     *   **Workflow**:
-        *   **`data_update_pipeline`**: Producer DAG. Simulates new data arrival.
+        *   **`data_update_pipeline`**: Producer DAG. Fetches live data from OpenWeatherMap API (2.5/weather) and appends to dataset.
         *   **`weather_retrain_pipeline`**: Consumer DAG. Automatically triggers `dvc repro` when data updates.
     *   **Key Directories**:
         *   `dags/`: Your Python DAG files.
