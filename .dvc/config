@@ -1,6 +1,5 @@
 [core]
     autostage = true
     remote = origin
-['remote "origin"']
+[remote "origin"]
     url = s3://dvc
-    endpointurl = https://dagshub.com/a13x60r/dec25bmlops_int_weather.s3
