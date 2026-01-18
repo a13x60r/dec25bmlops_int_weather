@@ -30,6 +30,9 @@ jobs:
     - name: Configure DVC
       run: |
         dvc remote modify --local origin url https://dagshub.com/a13x60r/dec25bmlops_int_weather.dvc
+        dvc remote modify --local origin auth basic
+        dvc remote modify --local origin user ${{ secrets.DAGSHUB_USERNAME }}
+        dvc remote modify --local origin password ${{ secrets.DAGSHUB_TOKEN }}
 
     - name: Pull data
       run: |
