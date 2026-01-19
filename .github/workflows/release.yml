@@ -11,6 +11,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      issues: write
     steps:
     - uses: actions/checkout@v3
 
@@ -69,3 +70,37 @@ jobs:
           ${{ secrets.DOCKERHUB_USERNAME }}/weather-app:${{ github.sha }}
           ghcr.io/${{ github.repository_owner }}/weather-app:latest
           ghcr.io/${{ github.repository_owner }}/weather-app:${{ github.sha }}
+
+    - name: Report Failure
+      if: failure()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const { repo, owner } = context.repo;
+          const run_url = `${context.payload.repository.html_url}/actions/runs/${context.runId}`;
+          const issue_title = `Release Failure: ${context.workflow} on ${context.ref.replace('refs/heads/', '')}`;
+
+          const issues = await github.rest.issues.listForRepo({
+            owner,
+            repo,
+            state: 'open',
+            creator: 'github-actions[bot]'
+          });
+
+          const existing_issue = issues.data.find(i => i.title === issue_title);
+
+          if (existing_issue) {
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: existing_issue.number,
+              body: `Another failure occurred in run [${context.runId}](${run_url}). Check logs for details.`
+            });
+          } else {
+            await github.rest.issues.create({
+              owner,
+              repo,
+              title: issue_title,
+              body: `The workflow [${context.workflow}](${run_url}) failed on branch ${context.ref}.\n\nCheck the [logs](${run_url}) for details.`
+            });
+          }
