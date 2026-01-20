@@ -167,6 +167,9 @@ services:
       _PIP_ADDITIONAL_REQUIREMENTS: "apache-airflow-providers-docker"
       AIRFLOW_VAR_DAGSHUB_USERNAME: ${DAGSHUB_USERNAME}
       AIRFLOW_VAR_DAGSHUB_TOKEN: ${DAGSHUB_TOKEN}
+      AIRFLOW_VAR_OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY}
+      AIRFLOW_VAR_SLACK_BOT_TOKEN: ${SLACK_BOT_TOKEN}
+      AIRFLOW_VAR_SLACK_CHANNEL: ${SLACK_CHANNEL}
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
@@ -198,6 +201,9 @@ services:
       _PIP_ADDITIONAL_REQUIREMENTS: "apache-airflow-providers-docker"
       AIRFLOW_VAR_DAGSHUB_USERNAME: ${DAGSHUB_USERNAME}
       AIRFLOW_VAR_DAGSHUB_TOKEN: ${DAGSHUB_TOKEN}
+      AIRFLOW_VAR_OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY}
+      AIRFLOW_VAR_SLACK_BOT_TOKEN: ${SLACK_BOT_TOKEN}
+      AIRFLOW_VAR_SLACK_CHANNEL: ${SLACK_CHANNEL}
     command: scheduler
     volumes:
       - ./dags:/opt/airflow/dags
