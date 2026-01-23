@@ -5,7 +5,7 @@ import requests
 
 
 def verify():
-    url = "http://localhost:3000/predict"
+    url = "http://127.0.0.1:3000/predict"
 
     # Load real sample data
     try:
