@@ -33,7 +33,7 @@ It extends the classic *cookiecutter data science* structure with **data version
 | - [ ] **Weights & Biases** | Experiment comparison & dashboards |
 | - [x] **Docker** | Reproducible environments |
 | - [x] **Airflow** | Pipeline orchestration |
-| - [ ] **BentoML** | Model serving |
+| - [x] **BentoML** | Model serving |
 | - [x] **Jenkins** | CI/CD |
 | - [ ] **Prometheus/Grafana** | Monitoring & drift |
 
@@ -52,13 +52,14 @@ It extends the classic *cookiecutter data science* structure with **data version
         *   Ensure `DAGSHUB_USERNAME` and `DAGSHUB_TOKEN` are in your `.env` file.
         *   This allows you to push/pull data locally via the S3 remote.
 
-7.  **CI/CD Configuration (GitHub Actions)**:
-    *   **CI & Release Pipelines**: Configured to use public HTTPS access for reading data. **No secrets required** for these workflows to pass.
-    *   **Airflow / Training**: To enable the training pipeline to *push* new models/data, you must configure the following in your Airflow Variables (or `.env` for Docker):
-        *   `DAGSHUB_USERNAME`
-        *   `DAGSHUB_TOKEN`
+6.  **CI/CD Configuration (GitHub Actions)**:
+    *   **CI & Release Pipelines**: Configured to use public HTTPS access for reading data.
+    *   **Required Secrets**: To enable automatic releases and docker pushes, configure these **Repository Secrets**:
+        *   `DAGSHUB_USERNAME`, `DAGSHUB_TOKEN`: For DVC data access.
+        *   `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`: For pushing Docker images.
+        *   `GITHUB_TOKEN`: Automatically provided by GitHub (no action needed).
 
-4.  **Weather API (Optional)**:
+7.  **Weather API (Optional)**:
     *   The project uses OpenWeatherMap for live data.
     *   Key is pre-configured in `docker-compose.yml` (Free Tier).
     *   To use your own: Set `OPENWEATHER_API_KEY` in `docker-compose.yml` or `.env`.
@@ -114,6 +115,30 @@ It extends the classic *cookiecutter data science* structure with **data version
         *   `dags/`: Your Python DAG files.
         *   `logs/`: Airflow execution logs.
 
+### Option C: Run with BentoML
+
+1.  **Serve Locally**:
+    ```bash
+    bentoml serve src.service:RainPredictionService
+    ```
+    *   **Swagger UI**: [http://localhost:3000](http://localhost:3000)
+
+2.  **Build Bento**:
+    ```bash
+    bentoml build
+    ```
+
+3.  **Container Registry**:
+    The BentoML service is automatically built and pushed to Docker Hub and GHCR on every push to `master`.
+
+    *   **Docker Hub**: `docker.io/<user>/rain-prediction-service:latest`
+    *   **GHCR**: `ghcr.io/<owner>/rain-prediction-service:latest`
+
+    **Pull & Run**:
+    ```bash
+    docker run -it --rm -p 3000:3000 docker.io/<user>/rain-prediction-service:latest serve
+    ```
+
 ---
 
 ## Development & Testing
@@ -144,6 +169,10 @@ python src/models/train_model.py
 
 # Predict
 python src/models/predict_model.py
+
+# Verify BentoML Service
+python verify_bento.py
+
 ```
 
 **Docker:**

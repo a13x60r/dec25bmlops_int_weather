@@ -1,0 +1,7 @@
+service: "src.service:RainPredictionService"
+include:
+  - "src/service.py"
+  - "models/xgboost_model.pkl"
+  - "requirements.txt"
+python:
+  requirements_txt: "./requirements.txt"

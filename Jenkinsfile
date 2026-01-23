@@ -49,6 +49,24 @@ pipeline {
                 }
             }
         }
+
+        stage('Build Bento') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh """
+                        . venv/bin/activate
+                        bentoml build
+                        """
+                    } else {
+                        bat """
+                        call venv\\Scripts\\activate
+                        bentoml build
+                        """
+                    }
+                }
+            }
+        }
     }
 
     post {

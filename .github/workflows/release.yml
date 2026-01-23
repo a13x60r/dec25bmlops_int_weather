@@ -71,6 +71,27 @@ jobs:
           ghcr.io/${{ github.repository_owner }}/weather-app:latest
           ghcr.io/${{ github.repository_owner }}/weather-app:${{ github.sha }}
 
+    - name: Build and Push BentoML Service
+      run: |
+        # Build the Bento
+        bentoml build
+
+        # Define Tags
+        DOCKER_TAG="${{ secrets.DOCKERHUB_USERNAME }}/rain-prediction-service:latest"
+        GHCR_TAG="ghcr.io/${{ github.repository_owner }}/rain-prediction-service:latest"
+        SHA_TAG="ghcr.io/${{ github.repository_owner }}/rain-prediction-service:${{ github.sha }}"
+
+        # Containerize (creates local docker image)
+        bentoml containerize rain_prediction_service:latest \
+          --image-tag "$DOCKER_TAG" \
+          --image-tag "$GHCR_TAG" \
+          --image-tag "$SHA_TAG"
+
+        # Push to Registries
+        docker push "$DOCKER_TAG"
+        docker push "$GHCR_TAG"
+        docker push "$SHA_TAG"
+
     - name: Report Failure
       if: failure()
       uses: actions/github-script@v6

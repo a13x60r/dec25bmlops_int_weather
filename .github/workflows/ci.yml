@@ -46,6 +46,10 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
+
+    - name: Build Bento
+      run: |
+        bentoml build
     - name: Report Failure
       if: failure()
       uses: actions/github-script@v6
