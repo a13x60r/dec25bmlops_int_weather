@@ -34,3 +34,4 @@ python-dotenv==1.0.1
 pymongo==4.6.1
 requests==2.32.3
 bentoml==1.4.33
+pyjwt==2.9.0

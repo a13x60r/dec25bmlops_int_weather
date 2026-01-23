@@ -1,9 +1,25 @@
+# Standard library imports
+import logging
+import os
 import pickle
+import traceback
 from pathlib import Path
 
+# Third-party imports
 import bentoml
+import jwt
 import pandas as pd
 from pydantic import BaseModel, ConfigDict, Field
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Security constants
+JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "insecure-default-key-do-not-use-in-production")
+JWT_ALGORITHM = "HS256"
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin")
 
 
 # Define the input schema
@@ -36,11 +52,41 @@ class RainPredictionService:
             self.model = pickle.load(f)
 
     @bentoml.api
-    def predict(self, input_data: RainInput) -> dict:
+    def login(
+        self,
+        username: str = Field(..., description="Username"),
+        password: str = Field(..., description="Password"),
+    ) -> dict:
+        """
+        Login to get a JWT token.
+        """
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            token = jwt.encode({"username": username}, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+            return {"token": token}
+        else:
+            raise bentoml.exceptions.BentoMLException(message="Invalid credentials", error_code=401)
+
+    @bentoml.api
+    def predict(self, input_data: RainInput, ctx: bentoml.Context) -> dict:
         """
         Make a prediction using the XGBoost model.
-        Accepts a JSON object matching the RainInput schema.
+        Requires 'Authorization: Bearer <token>' header.
         """
+        # 1. Verify Authentication
+        auth_header = ctx.request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            raise bentoml.exceptions.BentoMLException(
+                message="Missing or invalid Authorization header", error_code=401
+            )
+
+        token = auth_header.split(" ")[1]
+        try:
+            jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+        except jwt.ExpiredSignatureError:
+            raise bentoml.exceptions.BentoMLException(message="Token has expired", error_code=401)
+        except jwt.InvalidTokenError:
+            raise bentoml.exceptions.BentoMLException(message="Invalid token", error_code=401)
+
         try:
             # Convert Pydantic model to dictionary (including extra fields)
             data_dict = input_data.model_dump()
@@ -62,8 +108,12 @@ class RainPredictionService:
                 "label": "Rain" if prediction == 1 else "No Rain",
                 "probability": float(probability),
             }
-        except Exception as e:
-            import traceback
+        except Exception:
+            # Log the full error internally
+            logger.error("Error during prediction:")
+            logger.error(traceback.format_exc())
 
-            traceback.print_exc()
-            raise e
+            # Return a generic error to the client to avoid leaking internals
+            raise bentoml.exceptions.BentoMLException(
+                message="An internal server error occurred.", error_code=500
+            )
