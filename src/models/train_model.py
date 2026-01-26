@@ -18,6 +18,7 @@ import pickle
 import sys
 from pathlib import Path
 
+import bentoml
 import mlflow
 import mlflow.xgboost
 import pandas as pd
@@ -299,6 +300,10 @@ def train_model(split_id=None):
             print(f"New model is better (F1: {new_f1:.4f} > {current_f1:.4f}). Saving new model.")
             with open(model_path, "wb") as f:
                 pickle.dump(model, f)
+
+            # Save to BentoML Model Store
+            print("Saving model to BentoML Model Store...")
+            bentoml.xgboost.save_model("rain_prediction_model", model)
         else:
             print(f"New model is worse (F1: {new_f1:.4f} <= {current_f1:.4f}).")
             saved_prod = False

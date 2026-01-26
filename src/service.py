@@ -1,9 +1,7 @@
 # Standard library imports
 import logging
 import os
-import pickle
 import traceback
-from pathlib import Path
 
 # Third-party imports
 import bentoml
@@ -11,15 +9,32 @@ import jwt
 import pandas as pd
 from pydantic import BaseModel, ConfigDict, Field
 
+# Local imports
+from src.auth.jwt_auth import JWTAuthMiddleware
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Security constants
+# These are still needed for Login endpoint to generate token
 JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "insecure-default-key-do-not-use-in-production")
 JWT_ALGORITHM = "HS256"
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin")
+
+# 1. Define Runners
+# We use the BentoML Model Store to get the model and convert it to a Runner.
+# This decouples inference from the API server.
+xgboost_runner = bentoml.xgboost.get("rain_prediction_model:latest").to_runner()
+
+# 2. Create Service
+# We initialize the service with the runner.
+svc = bentoml.Service("rain_prediction_service", runners=[xgboost_runner])
+
+# 3. Add Middleware
+# This handles authentication globally for all endpoints (except those excluded in middleware)
+svc.add_asgi_middleware(JWTAuthMiddleware)
 
 
 # Define the input schema
@@ -44,76 +59,58 @@ class RainInput(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
-@bentoml.service(name="rain_prediction_service")
-class RainPredictionService:
-    def __init__(self):
-        model_path = Path("models/xgboost_model.pkl")
-        with open(model_path, "rb") as f:
-            self.model = pickle.load(f)
+class LoginInput(BaseModel):
+    username: str = Field(..., description="Username")
+    password: str = Field(..., description="Password")
 
-    @bentoml.api
-    def login(
-        self,
-        username: str = Field(..., description="Username"),
-        password: str = Field(..., description="Password"),
-    ) -> dict:
-        """
-        Login to get a JWT token.
-        """
-        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-            token = jwt.encode({"username": username}, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
-            return {"token": token}
-        else:
-            raise bentoml.exceptions.BentoMLException(message="Invalid credentials", error_code=401)
 
-    @bentoml.api
-    def predict(self, input_data: RainInput, ctx: bentoml.Context) -> dict:
-        """
-        Make a prediction using the XGBoost model.
-        Requires 'Authorization: Bearer <token>' header.
-        """
-        # 1. Verify Authentication
-        auth_header = ctx.request.headers.get("Authorization")
-        if not auth_header or not auth_header.startswith("Bearer "):
-            raise bentoml.exceptions.BentoMLException(
-                message="Missing or invalid Authorization header", error_code=401
-            )
+@svc.api(input=bentoml.io.JSON(pydantic_model=LoginInput), output=bentoml.io.JSON())
+def login(input_data: LoginInput, ctx: bentoml.Context) -> dict:
+    """
+    Login to get a JWT token.
+    """
+    if input_data.username == ADMIN_USERNAME and input_data.password == ADMIN_PASSWORD:
+        token = jwt.encode(
+            {"username": input_data.username}, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM
+        )
+        return {"token": token}
+    else:
+        ctx.response.status_code = 401
+        return {"detail": "Invalid credentials"}
 
-        token = auth_header.split(" ")[1]
-        try:
-            jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
-        except jwt.ExpiredSignatureError:
-            raise bentoml.exceptions.BentoMLException(message="Token has expired", error_code=401)
-        except jwt.InvalidTokenError:
-            raise bentoml.exceptions.BentoMLException(message="Invalid token", error_code=401)
 
-        try:
-            # Convert Pydantic model to dictionary (including extra fields)
-            data_dict = input_data.model_dump()
+@svc.api(input=bentoml.io.JSON(pydantic_model=RainInput), output=bentoml.io.JSON())
+async def predict(input_data: RainInput) -> dict:
+    """
+    Make a prediction using the XGBoost model runner.
+    Authentication is handled by middleware.
+    """
+    try:
+        # Convert Pydantic model to dictionary (including extra fields)
+        data_dict = input_data.model_dump()
 
-            # Convert to DataFrame
-            df = pd.DataFrame([data_dict])
+        # Convert to DataFrame
+        df = pd.DataFrame([data_dict])
 
-            # Ensure columns are in the correct order/set if necessary,
-            # but XGBoost on DataFrame usually handles by column name if trained that way.
-            # If trained on numpy array with no names, order matters strictly.
-            # Assuming model was trained with feature names active.
+        # Predict using the Runner (Asynchronous call)
+        # Note: Standard XGBoost runner exposes 'predict' method
+        prediction = await xgboost_runner.predict.async_run(df)
 
-            # Predict
-            prediction = self.model.predict(df)[0]
-            probability = self.model.predict_proba(df)[0][1]
+        # Taking the first element since batch size is 1 here
+        pred_value = int(prediction[0])
 
-            return {
-                "prediction": int(prediction),
-                "label": "Rain" if prediction == 1 else "No Rain",
-                "probability": float(probability),
-            }
-        except Exception:
-            # Log the full error internally
-            logger.error("Error during prediction:")
-            logger.error(traceback.format_exc())
+        return {
+            "prediction": pred_value,
+            "label": "Rain" if pred_value == 1 else "No Rain",
+            # "probability": float(probability), # Removed for now as predict_proba might need extra config
+        }
 
-            # Return a generic error to the client to avoid leaking internals
-            raise bentoml.exceptions.BentoMLException(
-                message="An internal server error occurred.", error_code=500
-            )
+    except Exception:
+        # Log the full error internally
+        logger.error("Error during prediction:")
+        logger.error(traceback.format_exc())
+
+        # Return a generic error is handled by BentoML exceptions usually, but specific 500 here
+        raise bentoml.exceptions.BentoMLException(
+            message="An internal server error occurred.", error_code=500
+        ) from None

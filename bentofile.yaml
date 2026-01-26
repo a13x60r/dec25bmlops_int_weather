@@ -1,7 +1,7 @@
-service: "src.service:RainPredictionService"
+service: "src.service:svc"
 include:
   - "src/service.py"
-  - "models/xgboost_model.pkl"
+  - "src/auth/jwt_auth.py"
   - "requirements.txt"
 python:
   requirements_txt: "./requirements.txt"
