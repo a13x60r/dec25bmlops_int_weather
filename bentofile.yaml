@@ -1,4 +1,4 @@
-service: "src.service:svc"
+service: "src.service:RainPredictionService"
 include:
   - "src/service.py"
   - "src/auth/jwt_auth.py"

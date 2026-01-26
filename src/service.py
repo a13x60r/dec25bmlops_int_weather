@@ -1,18 +1,15 @@
 # Standard library imports
 import logging
 import os
-import traceback
 import pickle
+import traceback
 from pathlib import Path
 
 # Third-party imports
 import bentoml
 import jwt
 import pandas as pd
-import numpy as np
-import xgboost as xgb
 from pydantic import BaseModel, ConfigDict, Field
-from starlette.responses import JSONResponse
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -29,13 +26,13 @@ ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin")
 def load_xgboost_runner():
     model_name = "rain_prediction_model"
     tag = f"{model_name}:latest"
-    
+
     try:
         # Try finding in BentoML local store
         return bentoml.xgboost.get(tag).to_runner()
     except Exception as e:
         logger.warning(f"Could not load model '{tag}' from BentoML store: {e}")
-        
+
         # Fallback: Check for pickle file
         pickle_path = Path("models/xgboost_model.pkl")
         if pickle_path.exists():
@@ -43,22 +40,26 @@ def load_xgboost_runner():
             try:
                 with open(pickle_path, "rb") as f:
                     model = pickle.load(f)
-                
+
                 # Save to BentoML store to fix future lookups
                 bentoml.xgboost.save_model(model_name, model)
                 logger.info(f"Model saved to BentoML store as '{model_name}'")
-                
+
                 # Try loading again
                 return bentoml.xgboost.get(tag).to_runner()
             except Exception as load_error:
                 logger.error(f"Failed to load/save model from pickle: {load_error}")
                 raise
         else:
-            logger.error(f"Critical: Model not found in store AND pickle not found at {pickle_path}")
+            logger.error(
+                f"Critical: Model not found in store AND pickle not found at {pickle_path}"
+            )
             # We cannot proceed without a runner.
-            raise RuntimeError(f"Model {model_name} not found locally or as pickle.")
+            raise RuntimeError(f"Model {model_name} not found locally or as pickle.") from e
+
 
 xgboost_runner = load_xgboost_runner()
+
 
 # 2. Input Schemas
 class RainInput(BaseModel):
@@ -77,7 +78,7 @@ class RainInput(BaseModel):
     Temp3pm: float = Field(..., description="Temperature at 3pm in degrees Celsius")
     RainToday: int = Field(..., description="1 if it rained today, 0 otherwise")
     Year: int = Field(..., description="Year of the observation")
-    
+
     # Optional fields
     Date: str | None = None
     Location: str | None = None
@@ -87,18 +88,16 @@ class RainInput(BaseModel):
 
     model_config = ConfigDict(extra="allow")
 
+
 class LoginInput(BaseModel):
     username: str = Field(..., description="Username")
     password: str = Field(..., description="Password")
 
 
 # 3. Service Definition
-@bentoml.service(name="rain_prediction_service", runners=[xgboost_runner])
+@bentoml.service(name="rain_prediction_service")
 class RainPredictionService:
     def __init__(self):
-        # Force initialization of runner for local dev
-        xgboost_runner.init_local()
-
         # Load artifacts on startup
         self.preprocessor = None
         try:
@@ -108,7 +107,9 @@ class RainPredictionService:
                     self.preprocessor = pickle.load(f)
                 logger.info("Preprocessing artifacts loaded successfully.")
             else:
-                logger.warning(f"Preprocessing artifacts not found at {artifact_path}. Service may fail.")
+                logger.warning(
+                    f"Preprocessing artifacts not found at {artifact_path}. Service may fail."
+                )
         except Exception as e:
             logger.error(f"Failed to load preprocessing artifacts: {e}")
 
@@ -136,25 +137,25 @@ class RainPredictionService:
             df["Month"] = df["Date"].dt.month
             df["Season"] = df["Month"].apply(self.get_season_aus)
             df.drop(columns=["Date", "Month"], inplace=True)
- 
+
         # 2. Imputation
         for col in pp["numeric_cols"]:
             if col not in df.columns:
-                 df[col] = pp["train_medians"][col]
+                df[col] = pp["train_medians"][col]
             else:
-                 df[col] = df[col].fillna(pp["train_medians"][col])
+                df[col] = df[col].fillna(pp["train_medians"][col])
 
         for col in pp["categorical_cols"]:
             if col not in df.columns:
                 df[col] = pp["train_modes"][col]
             else:
                 df[col] = df[col].fillna(pp["train_modes"][col])
-                
+
         # 3. RainToday
         if "RainToday" in df.columns:
-             if df["RainToday"].dtype == "object":
-                 df["RainToday"] = df["RainToday"].map({"No": 0, "Yes": 1})
-             df["RainToday"] = df["RainToday"].fillna(0).astype(int)
+            if df["RainToday"].dtype == "object":
+                df["RainToday"] = df["RainToday"].map({"No": 0, "Yes": 1})
+            df["RainToday"] = df["RainToday"].fillna(0).astype(int)
 
         # 4. OHE
         df = pd.get_dummies(df, columns=pp.get("categorical_cols_encoding", []), drop_first=True)
@@ -181,13 +182,13 @@ class RainPredictionService:
             jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
         except jwt.ExpiredSignatureError:
             ctx.response.status_code = 401
-            raise Exception("Token has expired")
+            raise Exception("Token has expired") from None
         except jwt.InvalidTokenError:
             ctx.response.status_code = 401
-            raise Exception("Invalid token")
+            raise Exception("Invalid token") from None
         except Exception as e:
             ctx.response.status_code = 401
-            raise Exception(f"Auth error: {e}")
+            raise Exception(f"Auth error: {e}") from e
 
     @bentoml.api
     def login(self, input_data: LoginInput) -> dict:
@@ -200,9 +201,12 @@ class RainPredictionService:
             # ctx not available in sync api? It is if argument.
             # But let's raise simple error
             # Or use ctx argument
-            return {"detail": "Invalid credentials", "status": 401} # BentoML handles return values?
+            return {
+                "detail": "Invalid credentials",
+                "status": 401,
+            }  # BentoML handles return values?
             # Better to use ctx to set status code if possible, but let's keep it simple.
-    
+
     @bentoml.api
     async def predict(self, input_data: RainInput, ctx: bentoml.Context) -> dict:
         try:
@@ -210,7 +214,7 @@ class RainPredictionService:
         except Exception as e:
             # verify_auth sets status code, we just return error message
             if ctx.response.status_code != 401:
-                 ctx.response.status_code = 401
+                ctx.response.status_code = 401
             return {"detail": str(e)}
 
         try:

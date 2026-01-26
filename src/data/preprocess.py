@@ -10,6 +10,7 @@ Usage:
     python src/data/preprocess
 """
 
+import pickle
 import sys
 from pathlib import Path
 
@@ -266,7 +267,7 @@ print("Imbalanced class distribution.")
 
 
 # ==================== Step 10: Save Preprocessing Artifacts ====================
-import pickle
+
 
 models_dir = Path("models")
 models_dir.mkdir(parents=True, exist_ok=True)

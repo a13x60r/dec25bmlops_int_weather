@@ -18,7 +18,7 @@ from unittest.mock import patch
 
 import bentoml
 
-from src.service import RainInput, RainPredictionService
+from src.service import LoginInput, RainInput, RainPredictionService, xgboost_runner
 
 
 class TestServiceSecurity(unittest.TestCase):
@@ -34,43 +34,48 @@ class TestServiceSecurity(unittest.TestCase):
         self.mock_pickle_load.return_value = self.mock_model
 
         # Initialize service
+        try:
+            xgboost_runner.init_local()
+        except bentoml.exceptions.StateException:
+            pass
         self.service = RainPredictionService()
 
     def tearDown(self):
         self.pickle_patcher.stop()
 
     def test_login_success(self):
-        result = self.service.login("testuser", "testpass")
+        result = self.service.login(LoginInput(username="testuser", password="testpass"))
         self.assertIn("token", result)
         decoded = jwt.decode(result["token"], "testsecret", algorithms=["HS256"])
         self.assertEqual(decoded["username"], "testuser")
 
     def test_login_failure(self):
-        with self.assertRaises(bentoml.exceptions.BentoMLException) as cm:
-            self.service.login("testuser", "wrongpass")
-        self.assertEqual(cm.exception.error_code, 401)
+        result = self.service.login(LoginInput(username="testuser", password="wrongpass"))
+        self.assertEqual(result.get("status"), 401)
+        self.assertEqual(result.get("detail"), "Invalid credentials")
 
     def test_predict_no_token(self):
         ctx = MagicMock()
         ctx.request.headers = {}
         input_data = self._get_valid_input()
 
-        with self.assertRaises(bentoml.exceptions.BentoMLException) as cm:
-            self.service.predict(input_data, ctx)
-        self.assertEqual(cm.exception.error_code, 401)
+        result = self.service.predict(input_data, ctx)  # Should return error dict, not raise
+        self.assertEqual(ctx.response.status_code, 401)
+        self.assertIn("Missing or invalid Authorization header", result["detail"])
 
     def test_predict_invalid_token(self):
         ctx = MagicMock()
         ctx.request.headers = {"Authorization": "Bearer invalidtoken"}
         input_data = self._get_valid_input()
 
-        with self.assertRaises(bentoml.exceptions.BentoMLException) as cm:
-            self.service.predict(input_data, ctx)
-        self.assertEqual(cm.exception.error_code, 401)
+        result = self.service.predict(input_data, ctx)
+        self.assertEqual(ctx.response.status_code, 401)
+        # Service catches 'Invalid token' and returns it in detail
+        self.assertIn("Invalid token", result["detail"])
 
     def test_predict_valid_token(self):
         # login first
-        login_res = self.service.login("testuser", "testpass")
+        login_res = self.service.login(LoginInput(username="testuser", password="testpass"))
         token = login_res["token"]
 
         ctx = MagicMock()
