@@ -121,6 +121,22 @@ services:
     command: [ "bash", "-lc", "pip install -e . && python src/models/train_model.py" ]
     profiles: [ "train" ]
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: mlops_api
+    environment:
+      WANDB_PROJECT: weather-au-mlops
+      WANDB_MODE: online
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./:/workspace
+      - pip_cache:/root/.cache/pip
+    working_dir: /workspace
+    command: [ "bash", "-lc", "pip install -e . && bentoml serve src.service:RainPredictionService --host 0.0.0.0 --port 3000" ]
+
   # -- Airflow Services --
   airflow-postgres:
     image: postgres:13

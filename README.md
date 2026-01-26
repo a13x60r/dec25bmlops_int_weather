@@ -105,6 +105,13 @@ It extends the classic *cookiecutter data science* structure with **data version
         docker compose exec dev dvc repro
         ```
 
+3.  **Run API**:
+    Start the BentoML API service on port 3000:
+    ```bash
+    docker compose up -d api
+    ```
+    *   **Swagger UI**: [http://localhost:3000](http://localhost:3000)
+
 3.  **Run with Airflow Orchestration**:
     *   **Access UI**: [http://localhost:8081](http://localhost:8081)
         *   User/Pass: `airflow/airflow`
