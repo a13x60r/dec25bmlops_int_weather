@@ -243,6 +243,15 @@ It extends the classic *cookiecutter data science* structure with **data version
     docker run -it --rm -p 3000:3000 docker.io/${DOCKERHUB_USERNAME}/rain-prediction-service:latest serve
     ```
 
+### Available Docker Images
+
+The project publishes two distinct images to GitHub Container Registry (GHCR):
+
+| Image | Description | Use Case |
+| :--- | :--- | :--- |
+| **`rain-prediction-service`** | **The Product**. Production-ready AI API serving the prediction model. Includes Swagger UI (`/`) and JWT auth (`/login`). | **Deploying** the API for end-users to Kubernetes, Cloud Run, or servers. |
+| **`weather-app`** | **The Factory**. Full development environment with Python 3.11, DVC, and training scripts. | **CI/CD**, testing, retraining models, or debugging pipelines. |
+
 ### Using GHCR Images
 
 You can pull the pre-built images directly from the GitHub Container Registry (GHCR):
