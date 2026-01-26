@@ -14,7 +14,7 @@ os.environ["ADMIN_USERNAME"] = "testuser"
 os.environ["ADMIN_PASSWORD"] = "testpass"
 os.environ["JWT_SECRET_KEY"] = "testsecret"
 
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import bentoml
 
@@ -84,12 +84,16 @@ class TestServiceSecurity(unittest.IsolatedAsyncioTestCase):
 
         # This will fail if model loading failed or prediction logic fails,
         # but we are mainly testing the security wrapper part here.
-        # However, since the service loads the real model, this is an integration test.
-        try:
-            result = await self.service.predict(input_data, ctx)
-            self.assertIn("prediction", result)
-        except Exception as e:
-            self.fail(f"Predict raised exception with valid token: {e}")
+        # We mock the runner execution to avoid running real xgboost on Windows test env
+        pass  # Ensure indentation is correct for context manager below if used, but here we use patch
+
+        with patch("src.service.xgboost_runner") as mock_runner:
+            mock_runner.predict.async_run = AsyncMock(return_value=[0])
+            try:
+                result = await self.service.predict(input_data, ctx)
+                self.assertIn("prediction", result)
+            except Exception as e:
+                self.fail(f"Predict raised exception with valid token: {e}")
 
     def _get_valid_input(self):
         # Create a valid input object
