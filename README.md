@@ -1,6 +1,30 @@
 Weather Forecast in Australia — MLOps
 ====================================
 
+[![CI Pipeline](https://github.com/a13x60r/dec25bmlops_int_weather/actions/workflows/ci.yml/badge.svg)](https://github.com/a13x60r/dec25bmlops_int_weather/actions/workflows/ci.yml)
+[![Release Pipeline](https://github.com/a13x60r/dec25bmlops_int_weather/actions/workflows/release.yml/badge.svg)](https://github.com/a13x60r/dec25bmlops_int_weather/actions/workflows/release.yml)
+[![Release](https://img.shields.io/github/v/release/a13x60r/dec25bmlops_int_weather)](https://github.com/a13x60r/dec25bmlops_int_weather/releases)
+[![License: MIT](https://img.shields.io/github/license/a13x60r/dec25bmlops_int_weather)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
+[![Ruff](https://img.shields.io/badge/code%20style-ruff-2e3138?logo=ruff)](https://github.com/astral-sh/ruff)
+[![DVC](https://img.shields.io/badge/DVC-enabled-13ADC7?logo=dvc)](https://dvc.org/)
+[![DAGsHub](https://img.shields.io/badge/DAGsHub-connected-00AEEF)](https://dagshub.com/)
+[![MLflow](https://img.shields.io/badge/MLflow-tracking-0194E2)](https://mlflow.org/)
+[![Airflow](https://img.shields.io/badge/Airflow-orchestration-017CEE?logo=apacheairflow)](https://airflow.apache.org/)
+[![BentoML](https://img.shields.io/badge/BentoML-serving-FF6161)](https://www.bentoml.com/)
+[![Docker](https://img.shields.io/badge/Docker-compose-2496ED?logo=docker)](https://www.docker.com/)
+[![MinIO](https://img.shields.io/badge/MinIO-artifacts-C72E49?logo=minio)](https://min.io/)
+[![Postgres](https://img.shields.io/badge/Postgres-mlflow-4169E1?logo=postgresql)](https://www.postgresql.org/)
+[![Docker Hub Pulls (API)](https://img.shields.io/docker/pulls/a13x60r/rain-prediction-service)](https://hub.docker.com/r/a13x60r/rain-prediction-service)
+[![Docker Hub Pulls (App)](https://img.shields.io/docker/pulls/a13x60r/weather-app)](https://hub.docker.com/r/a13x60r/weather-app)
+[![GHCR Image](https://img.shields.io/badge/GHCR-image-181717?logo=github)](https://ghcr.io/a13x60r)
+[![Last Commit](https://img.shields.io/github/last-commit/a13x60r/dec25bmlops_int_weather)](https://github.com/a13x60r/dec25bmlops_int_weather/commits/master)
+
+[![Usage](https://img.shields.io/badge/Usage-Quickstart-0B5FFF)](#usage-guide)
+[![Services](https://img.shields.io/badge/Services-Overview-0B5FFF)](#services--features)
+[![CI/CD](https://img.shields.io/badge/CI%2FCD-Pipelines-0B5FFF)](#cicd)
+[![API](https://img.shields.io/badge/API-Swagger-0B5FFF)](#option-b-run-with-docker)
+
 This project is an **MLOps-oriented weather forecasting system** based on Australian daily weather observations.
 It extends the classic *cookiecutter data science* structure with **data versioning, experiment tracking, CI/CD, deployment, and monitoring**.
 
@@ -217,6 +241,31 @@ It extends the classic *cookiecutter data science* structure with **data version
     ```bash
     docker run -it --rm -p 3000:3000 docker.io/${DOCKERHUB_USERNAME}/rain-prediction-service:latest serve
     ```
+
+---
+
+## Train a New Model
+
+**Reuse the pipeline (recommended)**
+
+1.  Update `params.yaml`:
+    *   Point `data.raw_csv` to your dataset if needed.
+    *   Adjust model hyperparameters under `model`.
+2.  Run the full pipeline:
+    ```bash
+    dvc repro
+    ```
+
+**Train directly (skip DVC)**
+
+```bash
+python src/models/train_model.py --split_id 1
+```
+
+**Adding a different model type**
+
+*   Create a new training script (for example `src/models/train_lightgbm.py`) and add a new DVC stage in `dvc.yaml`.
+*   Save the model under a new BentoML name to avoid overwriting the XGBoost model.
 
 ---
 
