@@ -138,12 +138,12 @@ It extends the classic *cookiecutter data science* structure with **data version
 3.  **Container Registry**:
     The BentoML service is automatically built and pushed to Docker Hub and GHCR on every push to `master`.
 
-    *   **Docker Hub**: `docker.io/<user>/rain-prediction-service:latest`
-    *   **GHCR**: `ghcr.io/<owner>/rain-prediction-service:latest`
+    *   **Docker Hub**: `docker.io/a13x60r/rain-prediction-service:latest`
+    *   **GHCR**: `ghcr.io/a13x60r/rain-prediction-service:latest`
 
     **Pull & Run**:
     ```bash
-    docker run -it --rm -p 3000:3000 docker.io/<user>/rain-prediction-service:latest serve
+    docker run -it --rm -p 3000:3000 docker.io/a13x60r/rain-prediction-service:latest serve
     ```
 
 ---
