@@ -21,7 +21,7 @@ import bentoml
 from src.service import LoginInput, RainInput, RainPredictionService, xgboost_runner
 
 
-class TestServiceSecurity(unittest.TestCase):
+class TestServiceSecurity(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         # Patch pickle.load to return a mock model
         self.pickle_patcher = patch("pickle.load")
@@ -54,26 +54,26 @@ class TestServiceSecurity(unittest.TestCase):
         self.assertEqual(result.get("status"), 401)
         self.assertEqual(result.get("detail"), "Invalid credentials")
 
-    def test_predict_no_token(self):
+    async def test_predict_no_token(self):
         ctx = MagicMock()
         ctx.request.headers = {}
         input_data = self._get_valid_input()
 
-        result = self.service.predict(input_data, ctx)  # Should return error dict, not raise
+        result = await self.service.predict(input_data, ctx)  # Should return error dict, not raise
         self.assertEqual(ctx.response.status_code, 401)
         self.assertIn("Missing or invalid Authorization header", result["detail"])
 
-    def test_predict_invalid_token(self):
+    async def test_predict_invalid_token(self):
         ctx = MagicMock()
         ctx.request.headers = {"Authorization": "Bearer invalidtoken"}
         input_data = self._get_valid_input()
 
-        result = self.service.predict(input_data, ctx)
+        result = await self.service.predict(input_data, ctx)
         self.assertEqual(ctx.response.status_code, 401)
         # Service catches 'Invalid token' and returns it in detail
         self.assertIn("Invalid token", result["detail"])
 
-    def test_predict_valid_token(self):
+    async def test_predict_valid_token(self):
         # login first
         login_res = self.service.login(LoginInput(username="testuser", password="testpass"))
         token = login_res["token"]
@@ -86,7 +86,7 @@ class TestServiceSecurity(unittest.TestCase):
         # but we are mainly testing the security wrapper part here.
         # However, since the service loads the real model, this is an integration test.
         try:
-            result = self.service.predict(input_data, ctx)
+            result = await self.service.predict(input_data, ctx)
             self.assertIn("prediction", result)
         except Exception as e:
             self.fail(f"Predict raised exception with valid token: {e}")
