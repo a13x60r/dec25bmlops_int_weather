@@ -32,8 +32,9 @@ Authenticates a user and returns a JWT token.
 #### `POST /predict`
 Makes a prediction using the XGBoost runner. Requires `Authorization: Bearer <token>` header.
 
-*   **Input**: `RainInput` (JSON)
-    *   `MinTemp` (float): Minimum temperature (C)
+*   **Input**: `RainInput` (JSON) - Wrapped in `input_data` object
+    *   `input_data` (object):
+        *   `MinTemp` (float): Minimum temperature (C)
     *   `MaxTemp` (float): Maximum temperature (C)
     *   `Rainfall` (float): Rainfall (mm)
     *   `WindGustSpeed` (float): Peak wind gust speed (km/h)
