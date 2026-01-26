@@ -17,7 +17,7 @@ Weather Forecast in Australia — MLOps
 [![Postgres](https://img.shields.io/badge/Postgres-mlflow-4169E1?logo=postgresql)](https://www.postgresql.org/)
 [![Docker Hub Pulls (API)](https://img.shields.io/docker/pulls/a13x60r/rain-prediction-service)](https://hub.docker.com/r/a13x60r/rain-prediction-service)
 [![Docker Hub Pulls (App)](https://img.shields.io/docker/pulls/a13x60r/weather-app)](https://hub.docker.com/r/a13x60r/weather-app)
-[![GHCR Image](https://img.shields.io/badge/GHCR-image-181717?logo=github)](https://ghcr.io/a13x60r)
+[![GHCR Image](https://img.shields.io/badge/GHCR-image-181717?logo=github)](https://github.com/a13x60r?tab=packages)
 [![Last Commit](https://img.shields.io/github/last-commit/a13x60r/dec25bmlops_int_weather)](https://github.com/a13x60r/dec25bmlops_int_weather/commits/master)
 
 [![Usage](https://img.shields.io/badge/Usage-Quickstart-0B5FFF)](#usage-guide)
@@ -42,6 +42,7 @@ It extends the classic *cookiecutter data science* structure with **data version
   - [Option B: Run with Docker](#option-b-run-with-docker)
   - [Option C: Run with Airflow Orchestration](#option-c-run-with-airflow-orchestration)
   - [Option D: Run with BentoML](#option-d-run-with-bentoml)
+  - [Using GHCR Images](#using-ghcr-images)
 - [Development & Testing](#development--testing)
   - [Code Quality & Tests](#code-quality--tests)
   - [Manual Execution](#manual-execution)
@@ -240,6 +241,30 @@ It extends the classic *cookiecutter data science* structure with **data version
     **Pull & Run**:
     ```bash
     docker run -it --rm -p 3000:3000 docker.io/${DOCKERHUB_USERNAME}/rain-prediction-service:latest serve
+    ```
+
+### Using GHCR Images
+
+You can pull the pre-built images directly from the GitHub Container Registry (GHCR):
+
+1.  **Login to GHCR**:
+    Create a Personal Access Token (classic) with `read:packages` scope.
+    ```bash
+    echo $CR_PAT | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
+    ```
+
+2.  **Pull Images**:
+    ```bash
+    # Main Application
+    docker pull ghcr.io/a13x60r/weather-app:latest
+
+    # BentoML Service
+    docker pull ghcr.io/a13x60r/rain-prediction-service:latest
+    ```
+
+3.  **Run Bento Service**:
+    ```bash
+    docker run -it --rm -p 3000:3000 ghcr.io/a13x60r/rain-prediction-service:latest serve
     ```
 
 ---
