@@ -32,7 +32,7 @@ Authenticates a user and returns a JWT token.
         ```bash
         curl -X POST "http://localhost:3000/login" \
              -H "Content-Type: application/json" \
-             -d '{"username": "admin", "password": "admin"}'
+             -d '{"input_data": {"username": "admin", "password": "admin"}}'
         ```
         *Response*: `{"token": "YOUR_TOKEN"}`
 

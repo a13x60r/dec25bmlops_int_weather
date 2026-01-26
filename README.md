@@ -110,13 +110,14 @@ It extends the classic *cookiecutter data science* structure with **data version
     ```bash
     docker compose up -d api
     ```
+    *   **See [API.md](API.md) for full endpoint documentation.**
     *   **Swagger UI**: [http://localhost:3000](http://localhost:3000)
     *   **Authenticate**:
         Get your JWT token (default creds: `admin`/`admin`):
         ```bash
         curl -X POST "http://localhost:3000/login" \
              -H "Content-Type: application/json" \
-             -d '{"username": "admin", "password": "admin"}'
+             -d '{"input_data": {"username": "admin", "password": "admin"}}'
         ```
         *Response*: `{"token": "YOUR_TOKEN"}`
 
