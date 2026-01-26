@@ -76,7 +76,7 @@ It extends the classic *cookiecutter data science* structure with **data version
 *   **Postgres**: MLflow backend store (`localhost:5432`)
 *   **MinIO + MinIO setup**: S3-compatible artifact storage (`http://localhost:9001`)
 *   **BentoML API**: Prediction service (`http://localhost:3000`)
-*   **Trainer**: Runs `src/models/train_model.py` with DVC/MLflow
+*   **Trainer**: Runs [`src/models/train_model.py`](src/models/train_model.py) with DVC/MLflow
 *   **Dev**: Interactive container for local development and DVC repro
 
 **Airflow services**
@@ -124,7 +124,7 @@ It extends the classic *cookiecutter data science* structure with **data version
     *   Slack alerts on task failure:
         *   `SLACK_BOT_TOKEN`
         *   `SLACK_CHANNEL`
-    *   These map to Airflow variables via `AIRFLOW_VAR_*` in `docker-compose.yml`.
+    *   These map to Airflow variables via `AIRFLOW_VAR_*` in [`docker-compose.yml`](docker-compose.yml).
 
 6.  **Docker Permissions (Airflow)**:
     *   Airflow uses DockerOperator and mounts the Docker socket (`/var/run/docker.sock`).
@@ -149,7 +149,7 @@ It extends the classic *cookiecutter data science* structure with **data version
 
     # Install Dependencies
     pip install -e .
-    pip install -r requirements.txt
+    pip install -r [requirements.txt](requirements.txt)
     ```
 
 2.  **Run Pipeline**:
@@ -282,7 +282,7 @@ You can pull the pre-built images directly from the GitHub Container Registry (G
 
 **Reuse the pipeline (recommended)**
 
-1.  Update `params.yaml`:
+1.  Update [`params.yaml`](params.yaml):
     *   Point `data.raw_csv` to your dataset if needed.
     *   Adjust model hyperparameters under `model`.
 2.  Run the full pipeline:
@@ -293,12 +293,12 @@ You can pull the pre-built images directly from the GitHub Container Registry (G
 **Train directly (skip DVC)**
 
 ```bash
-python src/models/train_model.py --split_id 1
+python [src/models/train_model.py](src/models/train_model.py) --split_id 1
 ```
 
 **Adding a different model type**
 
-*   Create a new training script (for example `src/models/train_lightgbm.py`) and add a new DVC stage in `dvc.yaml`.
+*   Create a new training script (for example `src/models/train_lightgbm.py`) and add a new DVC stage in [`dvc.yaml`](dvc.yaml).
 *   Save the model under a new BentoML name to avoid overwriting the XGBoost model.
 
 ---
@@ -327,13 +327,13 @@ If you need to run specific scripts without the full DVC pipeline:
 **Local:**
 ```bash
 # Train
-python src/models/train_model.py
+python [src/models/train_model.py](src/models/train_model.py)
 
 # Predict
-python src/models/predict_model.py
+python [src/models/predict_model.py](src/models/predict_model.py)
 
 # Verify BentoML Service
-python verify_bento.py
+python [verify_bento.py](verify_bento.py)
 
 ```
 
@@ -341,10 +341,10 @@ python verify_bento.py
 Execute the scripts inside the `dev` container:
 ```bash
 # Train
-docker compose exec dev python src/models/train_model.py
+docker compose exec dev python [src/models/train_model.py](src/models/train_model.py)
 
 # Predict
-docker compose exec dev python src/models/predict_model.py
+docker compose exec dev python [src/models/predict_model.py](src/models/predict_model.py)
 ```
 
 ---
