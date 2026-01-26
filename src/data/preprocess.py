@@ -263,3 +263,26 @@ print("Column names match\n")
 print("Class distribution y_train: ", (y_train.value_counts() / y_train.value_counts().sum()) * 100)
 print("Class distribution y_test: ", (y_test.value_counts() / y_test.value_counts().sum()) * 100)
 print("Imbalanced class distribution.")
+
+
+# ==================== Step 10: Save Preprocessing Artifacts ====================
+import pickle
+
+models_dir = Path("models")
+models_dir.mkdir(parents=True, exist_ok=True)
+
+preprocessor_data = {
+    "numeric_cols": numerical_cols_scale,  # Use the scaled cols list which is the same as numeric_cols
+    "categorical_cols": categorical_cols,
+    "categorical_cols_encoding": categorical_cols_encoding,
+    "train_medians": train_medians,
+    "train_modes": train_modes,
+    "scaler": scaler,
+    "feature_names": X_train.columns.tolist(),
+}
+
+artifact_path = models_dir / "preprocessor.pkl"
+with open(artifact_path, "wb") as f:
+    pickle.dump(preprocessor_data, f)
+
+print(f"Saved preprocessing artifacts to {artifact_path}")

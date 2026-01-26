@@ -8,6 +8,7 @@ stages:
     outs:
       - data/processed
       - data/interim/df_preprocessed.csv
+      - models/preprocessor.pkl
 
   prepare_splits:
     cmd: python src/data/training_data_splits_by_year.py
