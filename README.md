@@ -111,6 +111,17 @@ It extends the classic *cookiecutter data science* structure with **data version
     docker compose up -d api
     ```
     *   **Swagger UI**: [http://localhost:3000](http://localhost:3000)
+    *   **Example Request**:
+        ```bash
+        curl -X POST "http://localhost:3000/predict" \
+             -H "Content-Type: application/json" \
+             -d '{
+                   "MinTemp": 10.5, "MaxTemp": 25.0, "Rainfall": 0.0, "WindGustSpeed": 30.0,
+                   "WindSpeed9am": 10.0, "WindSpeed3pm": 15.0, "Humidity9am": 60.0, "Humidity3pm": 40.0,
+                   "Pressure9am": 1015.0, "Pressure3pm": 1012.0, "Temp9am": 15.0, "Temp3pm": 22.0,
+                   "RainToday": 0, "Year": 2023
+                 }'
+        ```
 
 3.  **Run with Airflow Orchestration**:
     *   **Access UI**: [http://localhost:8081](http://localhost:8081)
