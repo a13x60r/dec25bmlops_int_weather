@@ -65,6 +65,10 @@ jobs:
       with:
         context: .
         push: true
+        labels: |
+          org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          org.opencontainers.image.description=Weather Prediction Application
+          org.opencontainers.image.licenses=MIT
         tags: |
           ${{ secrets.DOCKERHUB_USERNAME }}/weather-app:latest
           ${{ secrets.DOCKERHUB_USERNAME }}/weather-app:${{ github.sha }}
