@@ -276,6 +276,8 @@ You can pull the pre-built images directly from the GitHub Container Registry (G
     docker run -it --rm -p 3000:3000 ghcr.io/a13x60r/rain-prediction-service:latest serve
     ```
 
+    Once the service is running, see the **[Run with Docker -> Run API](#run-api)** section for instructions on how to access the Swagger UI, authenticate, and make predictions.
+
 ---
 
 ## Train a New Model
