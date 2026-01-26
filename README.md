@@ -11,15 +11,19 @@ It extends the classic *cookiecutter data science* structure with **data version
 
 ## Table of Contents
 - [MLOps Stack](#mlops-stack)
+- [Services & Features](#services--features)
 - [Configuration](#configuration)
 - [Usage Guide](#usage-guide)
   - [Option A: Run Locally](#option-a-run-locally)
   - [Option B: Run with Docker](#option-b-run-with-docker)
+  - [Option C: Run with Airflow Orchestration](#option-c-run-with-airflow-orchestration)
+  - [Option D: Run with BentoML](#option-d-run-with-bentoml)
 - [Development & Testing](#development--testing)
   - [Code Quality & Tests](#code-quality--tests)
   - [Manual Execution](#manual-execution)
 - [Key Metrics](#key-metrics)
 - [Project Organization](#project-organization)
+- [CI/CD](#cicd)
 - [References](#references)
 
 ---
@@ -39,6 +43,34 @@ It extends the classic *cookiecutter data science* structure with **data version
 
 ---
 
+## Services & Features
+
+**Core services (Docker Compose)**
+
+*   **MLflow server**: Experiment tracking + model registry (`http://localhost:5000`)
+*   **Postgres**: MLflow backend store (`localhost:5432`)
+*   **MinIO + MinIO setup**: S3-compatible artifact storage (`http://localhost:9001`)
+*   **BentoML API**: Prediction service (`http://localhost:3000`)
+*   **Trainer**: Runs `src/models/train_model.py` with DVC/MLflow
+*   **Dev**: Interactive container for local development and DVC repro
+
+**Airflow services**
+
+*   **Airflow Webserver**: UI (`http://localhost:8081`, `airflow/airflow`)
+*   **Airflow Scheduler**: Orchestration
+*   **Airflow Postgres + Init**: Metadata DB + bootstrap
+*   **Failure alerts**: Slack notifications on task failure (optional)
+
+**Pipelines & orchestration**
+
+*   **DVC pipeline**: `dvc repro` for full training lifecycle
+*   **Airflow DAGs**:
+    *   `data_update_pipeline`: fetches live OpenWeatherMap data and appends to dataset
+    *   `weather_retrain_pipeline`: triggers DVC stages on dataset updates
+*   **BentoML**: containerized prediction service and API endpoint
+
+---
+
 ## Configuration
 
 **Crucial Step:** Before running the project (Locally or Docker), you must configure access to the data storage.
@@ -47,22 +79,31 @@ It extends the classic *cookiecutter data science* structure with **data version
     *   Python 3.11+ (Local only)
     *   Docker Engine (Docker only)
 
-6.  **DVC Credentials**:
+2.  **DVC Credentials**:
     *   **Local Development**:
         *   Ensure `DAGSHUB_USERNAME` and `DAGSHUB_TOKEN` are in your `.env` file.
         *   This allows you to push/pull data locally via the S3 remote.
 
-6.  **CI/CD Configuration (GitHub Actions)**:
-    *   **CI & Release Pipelines**: Configured to use public HTTPS access for reading data.
+3.  **CI/CD Configuration (GitHub Actions)**:
+    *   **CI & Release Pipelines**: Configure the DAGsHub DVC remote with basic auth for data access.
     *   **Required Secrets**: To enable automatic releases and docker pushes, configure these **Repository Secrets**:
         *   `DAGSHUB_USERNAME`, `DAGSHUB_TOKEN`: For DVC data access.
         *   `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`: For pushing Docker images.
         *   `GITHUB_TOKEN`: Automatically provided by GitHub (no action needed).
 
-7.  **Weather API (Optional)**:
+4.  **Weather API (Optional)**:
     *   The project uses OpenWeatherMap for live data.
-    *   Key is pre-configured in `docker-compose.yml` (Free Tier).
-    *   To use your own: Set `OPENWEATHER_API_KEY` in `docker-compose.yml` or `.env`.
+    *   Set `OPENWEATHER_API_KEY` in your `.env` (used by Airflow and the trainer service).
+
+5.  **Airflow Variables (Optional)**:
+    *   Slack alerts on task failure:
+        *   `SLACK_BOT_TOKEN`
+        *   `SLACK_CHANNEL`
+    *   These map to Airflow variables via `AIRFLOW_VAR_*` in `docker-compose.yml`.
+
+6.  **Docker Permissions (Airflow)**:
+    *   Airflow uses DockerOperator and mounts the Docker socket (`/var/run/docker.sock`).
+    *   Ensure your Docker host allows socket access from the Airflow containers.
 
 ---
 
@@ -75,6 +116,11 @@ It extends the classic *cookiecutter data science* structure with **data version
     # Create and Activate Venv (Windows)
     python -m venv venv
     .\venv\Scripts\Activate
+
+    # Create and Activate Venv (Linux/Mac)
+    python3 -m venv venv
+    source venv/bin/activate
+
 
     # Install Dependencies
     pip install -e .
@@ -96,6 +142,7 @@ It extends the classic *cookiecutter data science* structure with **data version
     ```
     *   **MLflow UI**: [http://localhost:5000](http://localhost:5000)
     *   **MinIO Console**: [http://localhost:9001](http://localhost:9001)
+    *   **Postgres**: `localhost:5432`
 
 2.  **Run Training**:
     *   **Via Service**: `docker compose --profile train up`
@@ -123,17 +170,18 @@ It extends the classic *cookiecutter data science* structure with **data version
                  }'
         ```
 
-3.  **Run with Airflow Orchestration**:
-    *   **Access UI**: [http://localhost:8081](http://localhost:8081)
-        *   User/Pass: `airflow/airflow`
-    *   **Workflow**:
-        *   **`data_update_pipeline`**: Producer DAG. Fetches live data from OpenWeatherMap API (2.5/weather) and appends to dataset.
-        *   **`weather_retrain_pipeline`**: Consumer DAG. Automatically triggers `dvc repro` when data updates.
-    *   **Key Directories**:
-        *   `dags/`: Your Python DAG files.
-        *   `logs/`: Airflow execution logs.
+### Option C: Run with Airflow Orchestration
 
-### Option C: Run with BentoML
+1.  **Access UI**: [http://localhost:8081](http://localhost:8081)
+    *   User/Pass: `airflow/airflow`
+2.  **Workflow**:
+    *   **`data_update_pipeline`**: Producer DAG. Fetches live data from OpenWeatherMap API (2.5/weather) and appends to dataset.
+    *   **`weather_retrain_pipeline`**: Consumer DAG. Automatically triggers `dvc repro` when data updates.
+3.  **Key Directories**:
+    *   `dags/`: Your Python DAG files.
+    *   `logs/`: Airflow execution logs.
+
+### Option D: Run with BentoML
 
 1.  **Serve Locally**:
     ```bash
@@ -149,12 +197,12 @@ It extends the classic *cookiecutter data science* structure with **data version
 3.  **Container Registry**:
     The BentoML service is automatically built and pushed to Docker Hub and GHCR on every push to `master`.
 
-    *   **Docker Hub**: `docker.io/a13x60r/rain-prediction-service:latest`
-    *   **GHCR**: `ghcr.io/a13x60r/rain-prediction-service:latest`
+    *   **Docker Hub**: `docker.io/${DOCKERHUB_USERNAME}/rain-prediction-service:latest`
+    *   **GHCR**: `ghcr.io/${GITHUB_REPOSITORY_OWNER}/rain-prediction-service:latest`
 
     **Pull & Run**:
     ```bash
-    docker run -it --rm -p 3000:3000 docker.io/a13x60r/rain-prediction-service:latest serve
+    docker run -it --rm -p 3000:3000 docker.io/${DOCKERHUB_USERNAME}/rain-prediction-service:latest serve
     ```
 
 ---
@@ -246,6 +294,34 @@ The pipeline tracks the following metrics for model evaluation:
     └── docker-compose.yml     <- Local MLflow / infra services
 
 ---
+
+## CI/CD
+
+**GitHub Actions (CI)**
+
+*   Trigger: Pull requests to `master`
+*   Steps: install deps, configure DVC, pull data, lint (ruff), test (pytest), `bentoml build`
+
+**GitHub Actions (Release)**
+
+*   Trigger: pushes to `master` and tags `v*.*.*`
+*   Builds and pushes Docker images:
+    *   Docker Hub: `${DOCKERHUB_USERNAME}/weather-app:latest`, `${DOCKERHUB_USERNAME}/weather-app:${GITHUB_SHA}`
+    *   GHCR: `ghcr.io/${GITHUB_REPOSITORY_OWNER}/weather-app:latest`, `ghcr.io/${GITHUB_REPOSITORY_OWNER}/weather-app:${GITHUB_SHA}`
+*   Builds and containerizes BentoML service:
+    *   `docker.io/${DOCKERHUB_USERNAME}/rain-prediction-service:latest`
+    *   `ghcr.io/${GITHUB_REPOSITORY_OWNER}/rain-prediction-service:latest`
+    *   `ghcr.io/${GITHUB_REPOSITORY_OWNER}/rain-prediction-service:${GITHUB_SHA}`
+
+**Jenkinsfile**
+
+*   Stages: checkout, venv setup, install deps, test, `bentoml build`
+
+**Required Secrets**
+
+*   `DAGSHUB_USERNAME`, `DAGSHUB_TOKEN`
+*   `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`
+*   `GITHUB_TOKEN` (provided by GitHub Actions)
 
 ## References
 -   **Data Source**: [BOM Climate Data](http://www.bom.gov.au/climate/data)
