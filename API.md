@@ -28,6 +28,13 @@ Authenticates a user and returns a JWT token.
 *   **Default Credentials**:
     *   Username: `admin` (or `ADMIN_USERNAME` env var)
     *   Password: `admin` (or `ADMIN_PASSWORD` env var)
+    *   **Example Request**:
+        ```bash
+        curl -X POST "http://localhost:3000/login" \
+             -H "Content-Type: application/json" \
+             -d '{"username": "admin", "password": "admin"}'
+        ```
+        *Response*: `{"token": "YOUR_TOKEN"}`
 
 #### `POST /predict`
 Makes a prediction using the XGBoost runner. Requires `Authorization: Bearer <token>` header.

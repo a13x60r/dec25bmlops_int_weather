@@ -111,10 +111,20 @@ It extends the classic *cookiecutter data science* structure with **data version
     docker compose up -d api
     ```
     *   **Swagger UI**: [http://localhost:3000](http://localhost:3000)
+    *   **Authenticate**:
+        Get your JWT token (default creds: `admin`/`admin`):
+        ```bash
+        curl -X POST "http://localhost:3000/login" \
+             -H "Content-Type: application/json" \
+             -d '{"username": "admin", "password": "admin"}'
+        ```
+        *Response*: `{"token": "YOUR_TOKEN"}`
+
     *   **Example Request**:
         ```bash
         curl -X POST "http://localhost:3000/predict" \
              -H "Content-Type: application/json" \
+             -H "Authorization: Bearer <YOUR_TOKEN>" \
              -d '{
                    "input_data": {
                        "MinTemp": 10.5, "MaxTemp": 25.0, "Rainfall": 0.0, "WindGustSpeed": 30.0,
