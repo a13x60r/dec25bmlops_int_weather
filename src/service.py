@@ -26,25 +26,39 @@ ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin")
 
 
 # 1. Define Runners
-try:
-    xgboost_runner = bentoml.xgboost.get("rain_prediction_model:latest").to_runner()
-except bentoml.exceptions.NotFound:
-    # Fallback/Recovery: Load from pickle and save to BentoML store
-    model_path = Path("models/xgboost_model.pkl")
-    if model_path.exists():
-        logger.info(f"Model not found in BentoML store. Loading from {model_path}...")
-        with open(model_path, "rb") as f:
-            model = pickle.load(f)
+def load_xgboost_runner():
+    model_name = "rain_prediction_model"
+    tag = f"{model_name}:latest"
+    
+    try:
+        # Try finding in BentoML local store
+        return bentoml.xgboost.get(tag).to_runner()
+    except Exception as e:
+        logger.warning(f"Could not load model '{tag}' from BentoML store: {e}")
         
-        bentoml.xgboost.save_model("rain_prediction_model", model)
-        xgboost_runner = bentoml.xgboost.get("rain_prediction_model:latest").to_runner()
-    else:
-        # We define runner anyway to pass to service, hoping it works or fails gracefully later
-        logger.error(f"Critical Error: Model not found at {model_path}")
-        # raise RuntimeError("Model not found in BentoML store OR models/xgboost_model.pkl!")
-        # If we raise here, module import fails. 
-        # But we need runner object.
-        pass
+        # Fallback: Check for pickle file
+        pickle_path = Path("models/xgboost_model.pkl")
+        if pickle_path.exists():
+            logger.info(f"Fallback: Loading model from {pickle_path}...")
+            try:
+                with open(pickle_path, "rb") as f:
+                    model = pickle.load(f)
+                
+                # Save to BentoML store to fix future lookups
+                bentoml.xgboost.save_model(model_name, model)
+                logger.info(f"Model saved to BentoML store as '{model_name}'")
+                
+                # Try loading again
+                return bentoml.xgboost.get(tag).to_runner()
+            except Exception as load_error:
+                logger.error(f"Failed to load/save model from pickle: {load_error}")
+                raise
+        else:
+            logger.error(f"Critical: Model not found in store AND pickle not found at {pickle_path}")
+            # We cannot proceed without a runner.
+            raise RuntimeError(f"Model {model_name} not found locally or as pickle.")
+
+xgboost_runner = load_xgboost_runner()
 
 # 2. Input Schemas
 class RainInput(BaseModel):
