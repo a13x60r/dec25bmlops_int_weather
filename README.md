@@ -26,7 +26,7 @@ Weather Forecast in Australia — MLOps
 [![API](https://img.shields.io/badge/API-Swagger-0B5FFF)](#option-b-run-with-docker)
 
 This project is an **MLOps-oriented weather forecasting system** based on Australian daily weather observations.
-It extends the classic *cookiecutter data science* structure with **data versioning, experiment tracking, CI/CD, deployment, and monitoring**.
+It extends the classic *cookiecutter data science* structure with **[data versioning](#mlops-stack), [experiment tracking](#mlops-stack), [CI/CD](#cicd), [deployment](#option-d-run-with-bentoml), and [monitoring](#key-metrics)**.
 
 *   **Primary Task:** RainTomorrow (binary classification)
 *   **Dataset:** [Kaggle - Weather Dataset Rattle Package](https://www.kaggle.com/jsphyg/weather-dataset-rattle-package)
@@ -92,13 +92,13 @@ It extends the classic *cookiecutter data science* structure with **data version
 *   **Airflow DAGs**:
     *   `data_update_pipeline`: fetches live OpenWeatherMap data and appends to dataset
     *   `weather_retrain_pipeline`: triggers DVC stages on dataset updates
-*   **BentoML**: containerized prediction service and API endpoint
+*   **BentoML**: containerized prediction service and API endpoint (see [Option D](#option-d-run-with-bentoml))
 
 ---
 
 ## Configuration
 
-**Crucial Step:** Before running the project (Locally or Docker), you must configure access to the data storage.
+**Crucial Step:** Before running the project ([Locally](#option-a-run-locally) or [Docker](#option-b-run-with-docker)), you must configure access to the data storage.
 
 1.  **System Requirements**:
     *   Python 3.11+ (Local only)
@@ -110,7 +110,7 @@ It extends the classic *cookiecutter data science* structure with **data version
         *   This allows you to push/pull data locally via the S3 remote.
 
 3.  **CI/CD Configuration (GitHub Actions)**:
-    *   **CI & Release Pipelines**: Configure the DAGsHub DVC remote with basic auth for data access.
+    *   **[CI & Release Pipelines](#cicd)**: Configure the DAGsHub DVC remote with basic auth for data access.
     *   **Required Secrets**: To enable automatic releases and docker pushes, configure these **Repository Secrets**:
         *   `DAGSHUB_USERNAME`, `DAGSHUB_TOKEN`: For DVC data access.
         *   `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`: For pushing Docker images.
@@ -233,7 +233,7 @@ It extends the classic *cookiecutter data science* structure with **data version
     ```
 
 3.  **Container Registry**:
-    The BentoML service is automatically built and pushed to Docker Hub and GHCR on every push to `master`.
+    The BentoML service is automatically built and pushed to Docker Hub and GHCR on every push to `master` (see [Using GHCR Images](#using-ghcr-images)).
 
     *   **Docker Hub**: `docker.io/${DOCKERHUB_USERNAME}/rain-prediction-service:latest`
     *   **GHCR**: `ghcr.io/${GITHUB_REPOSITORY_OWNER}/rain-prediction-service:latest`
