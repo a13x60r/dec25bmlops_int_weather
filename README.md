@@ -64,7 +64,7 @@ It extends the classic *cookiecutter data science* structure with **[data versio
 | - [x] **BentoML** | Model serving |
 | - [x] **Jenkins** | CI/CD |
 | - [x] **GitHub Actions** | CI/CD |
-| - [ ] **Prometheus/Grafana** | Monitoring & drift |
+| - [x] **Prometheus/Grafana** | Monitoring & drift |
 
 ---
 
@@ -85,6 +85,17 @@ It extends the classic *cookiecutter data science* structure with **[data versio
 *   **Airflow Scheduler**: Orchestration
 *   **Airflow Postgres + Init**: Metadata DB + bootstrap
 *   **Failure alerts**: Slack notifications on task failure (optional)
+
+**Monitoring services (Docker Compose profile: monitoring)**
+
+*   **Prometheus**: Metrics (`http://localhost:9090`)
+*   **Grafana**: Dashboards (`http://localhost:3001`, `admin/admin`)
+*   **Loki**: Log aggregation (`http://localhost:3100`)
+*   **Tempo**: Traces (`http://localhost:3200`)
+*   **Pushgateway**: Training metrics (`http://localhost:9091`)
+*   **Exporters**: Airflow StatsD, Postgres, Node, cAdvisor
+
+Grafana dashboards are provisioned under the **MLOps** folder from `grafana/dashboards`.
 
 **Pipelines & orchestration**
 
@@ -178,6 +189,11 @@ It extends the classic *cookiecutter data science* structure with **[data versio
     *   **MLflow UI**: [http://localhost:5000](http://localhost:5000)
     *   **MinIO Console**: [http://localhost:9001](http://localhost:9001)
     *   **Postgres**: `localhost:5432`
+
+    **Optional: Start monitoring stack**
+    ```bash
+    docker compose --profile monitoring up -d
+    ```
 
 2.  **Run Training**:
     *   **Via Service**: `docker compose --profile train up`
@@ -365,6 +381,8 @@ docker compose exec dev python [src/models/predict_model.py](src/models/predict_
 The pipeline tracks the following metrics for model evaluation:
 -   **Classification:** ROC-AUC, F1, Precision, Recall, PR-AUC
 -   **MLOps:** Latency (p95), error rate, data drift (PSI / KS)
+
+Training metrics are pushed to Prometheus via Pushgateway during `src/models/train_model.py` runs.
 
 ---
 

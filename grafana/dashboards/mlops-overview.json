@@ -1,0 +1,138 @@
+{
+  "uid": "mlops-overview",
+  "title": "MLOps Overview",
+  "tags": ["mlops", "overview"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Request Rate (rps)",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 0, "y": 0, "w": 6, "h": 6},
+      "targets": [
+        {
+          "expr": "sum(rate(bentoml_service_request_total[5m]))",
+          "legendFormat": "rps"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Error Rate (%)",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 6, "y": 0, "w": 6, "h": 6},
+      "targets": [
+        {
+          "expr": "100 * sum(rate(bentoml_service_request_total{http_response_code=~\"5..\"}[5m])) / sum(rate(bentoml_service_request_total[5m]))",
+          "legendFormat": "error_rate"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Success Rate (%)",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 12, "y": 0, "w": 6, "h": 6},
+      "targets": [
+        {
+          "expr": "100 * sum(rate(bentoml_service_request_total{http_response_code=~\"2..\"}[5m])) / sum(rate(bentoml_service_request_total[5m]))",
+          "legendFormat": "success_rate"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Latest Model F1",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 18, "y": 0, "w": 6, "h": 6},
+      "targets": [
+        {
+          "expr": "max(model_f1_score)",
+          "legendFormat": "f1"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Requests by Status",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 0, "y": 6, "w": 12, "h": 8},
+      "targets": [
+        {
+          "expr": "sum(rate(bentoml_service_request_total[5m])) by (http_response_code)",
+          "legendFormat": "{{http_response_code}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Model Metrics",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 12, "y": 6, "w": 12, "h": 8},
+      "targets": [
+        {"expr": "max(model_roc_auc)", "legendFormat": "roc_auc"},
+        {"expr": "max(model_pr_auc)", "legendFormat": "pr_auc"},
+        {"expr": "max(model_precision)", "legendFormat": "precision"},
+        {"expr": "max(model_recall)", "legendFormat": "recall"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Container CPU (cores)",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 0, "y": 14, "w": 12, "h": 8},
+      "targets": [
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total[5m]))",
+          "legendFormat": "cpu_cores"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Container Memory (GB)",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 12, "y": 14, "w": 12, "h": 8},
+      "targets": [
+        {
+          "expr": "sum(container_memory_usage_bytes) / 1024 / 1024 / 1024",
+          "legendFormat": "mem_gb"
+        }
+      ]
+    },
+    {
+      "type": "logs",
+      "title": "Service Logs",
+      "datasource": {"type": "loki", "uid": "loki"},
+      "gridPos": {"x": 0, "y": 22, "w": 24, "h": 8},
+      "targets": [
+        {
+          "expr": "{container=~\"mlops_api|airflow_webserver|airflow_scheduler\"}"
+        }
+      ]
+    }
+  ]
+}
