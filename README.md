@@ -107,7 +107,15 @@ It extends the classic *cookiecutter data science* structure with **[data versio
 2.  **DVC Credentials**:
     *   **Local Development**:
         *   Ensure `DAGSHUB_USERNAME` and `DAGSHUB_TOKEN` are in your `.env` file.
-        *   This allows you to push/pull data locally via the S3 remote.
+        *   **Configure DVC Remote**:
+            By default, DVC is configured for local MinIO (`s3://dvc`). To use DAGsHub, run:
+            ```bash
+            dvc remote modify --local origin url https://dagshub.com/a13x60r/dec25bmlops_int_weather.dvc
+            dvc remote modify --local origin auth basic
+            dvc remote modify --local origin user <YOUR_DAGSHUB_USERNAME>
+            dvc remote modify --local origin password <YOUR_DAGSHUB_TOKEN>
+            ```
+            This creates a `.dvc/config.local` file (ignored by git) to securely store your credentials.
 
 3.  **CI/CD Configuration (GitHub Actions)**:
     *   **[CI & Release Pipelines](#cicd)**: Configure the DAGsHub DVC remote with basic auth for data access.

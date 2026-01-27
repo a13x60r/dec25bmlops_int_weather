@@ -34,29 +34,29 @@ stages:
       size: 796
     - path: src/data/preprocess.py
       hash: md5
-      md5: 0ff35eb518da2dfd06f68b3f2a5f7b50
-      size: 9594
+      md5: 5aeae23cc40c7752f37239d819ae404d
+      size: 9596
     outs:
     - path: data/interim/df_preprocessed.csv
       hash: md5
-      md5: 9e62f566c399452c7efac3ed4d92348a
-      size: 13535164
+      md5: 59748fdd2b86623a74710ae8fcf84309
+      size: 13394376
     - path: data/processed
       hash: md5
-      md5: 1e1db19afe9bbaedd7698f560fb65866.dir
-      size: 61854141
+      md5: d9d3df1564299c54b9b76aa346add9c5.dir
+      size: 61572563
       nfiles: 4
     - path: models/preprocessor.pkl
       hash: md5
-      md5: 696473ee39ddc7a4bb1e7e76d2318df5
+      md5: 4929ac80c098265cf246945c70ac57e2
       size: 4080
   prepare_splits:
     cmd: python src/data/training_data_splits_by_year.py
     deps:
     - path: data/processed
       hash: md5
-      md5: 1e1db19afe9bbaedd7698f560fb65866.dir
-      size: 61854141
+      md5: d9d3df1564299c54b9b76aa346add9c5.dir
+      size: 61572563
       nfiles: 4
     - path: params.yaml
       hash: md5
@@ -69,6 +69,6 @@ stages:
     outs:
     - path: data/training_data_splits_by_year
       hash: md5
-      md5: b600b0f56bf44523a0dd09f6b7886e78.dir
-      size: 318027264
+      md5: 2a251d05f13facc65ab581d8fe0126a3.dir
+      size: 316565387
       nfiles: 37
