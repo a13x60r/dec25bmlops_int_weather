@@ -6,7 +6,3 @@ include:
 python:
   requirements_txt: "./requirements.txt"
 docker:
-  labels:
-    org.opencontainers.image.source: "https://github.com/a13x60r/dec25bmlops_int_weather"
-    org.opencontainers.image.description: "Rain Prediction Bento Service"
-    org.opencontainers.image.licenses: "MIT"
