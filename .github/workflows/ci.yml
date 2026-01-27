@@ -55,31 +55,36 @@ jobs:
       uses: actions/github-script@v6
       with:
         script: |
-          const { repo, owner } = context.repo;
-          const run_url = `${context.payload.repository.html_url}/actions/runs/${context.runId}`;
-          const issue_title = `CI Failure: ${context.workflow} on ${context.ref.replace('refs/heads/', '')}`;
+          try {
+            const { repo, owner } = context.repo;
+            const run_url = `${context.payload.repository.html_url}/actions/runs/${context.runId}`;
+            const issue_title = `CI Failure: ${context.workflow} on ${context.ref.replace('refs/heads/', '')}`;
 
-          const issues = await github.rest.issues.listForRepo({
-            owner,
-            repo,
-            state: 'open',
-            creator: 'github-actions[bot]' // Optional: filter by bot created
-          });
-
-          const existing_issue = issues.data.find(i => i.title === issue_title);
-
-          if (existing_issue) {
-            await github.rest.issues.createComment({
+            const issues = await github.rest.issues.listForRepo({
               owner,
               repo,
-              issue_number: existing_issue.number,
-              body: `Another failure occurred in run [${context.runId}](${run_url}). Check logs for details.`
+              state: 'open',
+              creator: 'github-actions[bot]' // Optional: filter by bot created
             });
-          } else {
-            await github.rest.issues.create({
-              owner,
-              repo,
-              title: issue_title,
-              body: `The workflow [${context.workflow}](${run_url}) failed on branch ${context.ref}.\n\nCheck the [logs](${run_url}) for details.`
-            });
+
+            const existing_issue = issues.data.find(i => i.title === issue_title);
+
+            if (existing_issue) {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: existing_issue.number,
+                body: `Another failure occurred in run [${context.runId}](${run_url}). Check logs for details.`
+              });
+            } else {
+              await github.rest.issues.create({
+                owner,
+                repo,
+                title: issue_title,
+                body: `The workflow [${context.workflow}](${run_url}) failed on branch ${context.ref}.\n\nCheck the [logs](${run_url}) for details.`
+              });
+            }
+          } catch (error) {
+            console.log('Failed to create/update issue. Issues might be disabled in this repository.');
+            console.log(error);
           }
