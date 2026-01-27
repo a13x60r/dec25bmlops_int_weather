@@ -405,31 +405,51 @@ The pipeline tracks the following metrics for model evaluation:
 
 ## CI/CD
 
-**GitHub Actions (CI)**
+Automatic quality assurance and deployment tracking are handled by GitHub Actions and Jenkins.
 
-*   Trigger: Pull requests to `master`
-*   Steps: install deps, configure DVC, pull data, lint (ruff), test (pytest), `bentoml build`
+### 1. GitHub Actions: CI Pipeline ([`ci.yml`](.github/workflows/ci.yml))
+**Trigger**: Pull requests to `master`.
 
-**GitHub Actions (Release)**
+Ensures that no broken code is merged into the main branch.
+*   **Dependencies**: Installs Python 3.11, pip, and required libraries (`requirements.txt`).
+*   **Data Integrity**: Runs `dvc pull` to ensure data versioning is configured and accessible.
+*   **Linting**: Enforces code style using `ruff`.
+*   **Testing**: Runs unit and integration tests with `pytest`.
+*   **Build Check**: Runs `bentoml build` to verify the model service can be packaged successfully.
 
-*   Trigger: pushes to `master` and tags `v*.*.*`
-*   Builds and pushes Docker images:
-    *   Docker Hub: `${DOCKERHUB_USERNAME}/weather-app:latest`, `${DOCKERHUB_USERNAME}/weather-app:${GITHUB_SHA}`
-    *   GHCR: `ghcr.io/${GITHUB_REPOSITORY_OWNER}/weather-app:latest`, `ghcr.io/${GITHUB_REPOSITORY_OWNER}/weather-app:${GITHUB_SHA}`
-*   Builds and containerizes BentoML service:
-    *   `docker.io/${DOCKERHUB_USERNAME}/rain-prediction-service:latest`
-    *   `ghcr.io/${GITHUB_REPOSITORY_OWNER}/rain-prediction-service:latest`
-    *   `ghcr.io/${GITHUB_REPOSITORY_OWNER}/rain-prediction-service:${GITHUB_SHA}`
+### 2. GitHub Actions: Release Pipeline ([`release.yml`](.github/workflows/release.yml))
+**Trigger**: Pushes to `master` and tags `v*.*.*`.
 
-**Jenkinsfile**
+Deploys the application and service to container registries.
+*   **Pre-flight Checks**: Runs the full CI suite (Lint, Test, DVC Pull).
+*   **Docker Container**: Builds the main `weather-app` image containing the full environment.
+    *   **Pushes to**: DockerHub (`a13x60r/weather-app`) & GHCR (`ghcr.io/a13x60r/weather-app`).
+    *   **Tags**: `latest` and `commit-sha`.
+*   **BentoML Service**: Containerizes the API service.
+    *   **Pushes to**: DockerHub (`a13x60r/rain-prediction-service`) & GHCR (`ghcr.io/a13x60r/rain-prediction-service`).
 
-*   Stages: checkout, venv setup, install deps, test, `bentoml build`
+### 3. Jenkins Pipeline ([`Jenkinsfile`](Jenkinsfile))
+**Trigger**: Poll SCM / Webhook.
 
-**Required Secrets**
+Provides a redundant, cross-platform CI environment.
+*   **Cross-Platform**: Designed to run checks on both **Windows** (Powershell) and **Linux** (Bash) agents.
+*   **Steps**:
+    *   Checkout Source
+    *   Create Virtual Environment (`venv`)
+    *   Install Dependencies (`pip install -r requirements.txt`)
+    *   Execute Tests (`pytest`)
+    *   Build Bento (`bentoml build`)
 
-*   `DAGSHUB_USERNAME`, `DAGSHUB_TOKEN`
-*   `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`
-*   `GITHUB_TOKEN` (provided by GitHub Actions)
+### Required Secrets
+Set these in your GitHub Repository Secrets (`Settings -> Secrets and variables -> Actions`) to enable the pipelines:
+
+| Secret | Purpose |
+| :--- | :--- |
+| `DAGSHUB_USERNAME` | Access to update/pull DVC data |
+| `DAGSHUB_TOKEN` | Access token for DAGsHub |
+| `DOCKERHUB_USERNAME` | Login for Docker Hub pushes |
+| `DOCKERHUB_TOKEN` | Access token for Docker Hub |
+| `GITHUB_TOKEN` | *(Auto-provided)* Access to GHCR and Issue commenting |
 
 ## References
 -   **Data Source**: [BOM Climate Data](http://www.bom.gov.au/climate/data)
