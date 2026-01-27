@@ -90,8 +90,8 @@ It extends the classic *cookiecutter data science* structure with **[data versio
 
 *   **DVC pipeline**: `dvc repro` for full training lifecycle
 *   **Airflow DAGs**:
-    *   `data_update_pipeline`: fetches live OpenWeatherMap data and appends to dataset
-    *   `weather_retrain_pipeline`: triggers DVC stages on dataset updates
+    *   `data_update_pipeline` (**Daily**): Fetches live OpenWeatherMap data, validates it, and appends to the raw dataset.
+    *   `weather_retrain_pipeline` (**Triggered**): Automatically runs when data updates. Executes DVC stages (`process` -> `prepare_splits` -> `train`) and pushes new artifacts to DAGsHub.
 *   **BentoML**: containerized prediction service and API endpoint (see [Option D](#option-d-run-with-bentoml))
 
 ---
@@ -213,8 +213,8 @@ It extends the classic *cookiecutter data science* structure with **[data versio
 1.  **Access UI**: [http://localhost:8081](http://localhost:8081)
     *   User/Pass: `airflow/airflow`
 2.  **Workflow**:
-    *   **`data_update_pipeline`**: Producer DAG. Fetches live data from OpenWeatherMap API (2.5/weather) and appends to dataset.
-    *   **`weather_retrain_pipeline`**: Consumer DAG. Automatically triggers `dvc repro` when data updates.
+    *   **`data_update_pipeline`**: Producer DAG. Runs **Daily**. Fetches live data from OpenWeatherMap API, validates schema, and updates the dataset.
+    *   **`weather_retrain_pipeline`**: Consumer DAG. **Triggered** by dataset updates. Runs the full training lifecycle (`preprocess` -> `splits` -> `train`) via DVC and pushes results to the remote storage.
 3.  **Key Directories**:
     *   `dags/`: Your Python DAG files.
     *   `logs/`: Airflow execution logs.
