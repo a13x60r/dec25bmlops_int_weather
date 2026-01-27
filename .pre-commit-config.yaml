@@ -1,12 +1,12 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.3
+    rev: v0.14.14
     hooks:
       - id: ruff
         args: ["--fix"]
       - id: ruff-format
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v6.0.0
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
@@ -20,3 +20,13 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
+
+  - repo: https://github.com/iterative/dvc
+    rev: 3.66.1
+    hooks:
+      - id: dvc-pre-commit
+        language_version: python3
+        stages: [pre-commit]
+      - id: dvc-pre-push
+        language_version: python3
+        stages: [pre-push]
