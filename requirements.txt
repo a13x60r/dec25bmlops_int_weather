@@ -36,3 +36,4 @@ requests==2.32.3
 bentoml==1.4.33
 pyjwt==2.9.0
 protobuf<5.0.0
+prometheus-client==0.20.0
