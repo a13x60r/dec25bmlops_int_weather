@@ -5,4 +5,3 @@ include:
   - "requirements.txt"
 python:
   requirements_txt: "./requirements.txt"
-docker:
