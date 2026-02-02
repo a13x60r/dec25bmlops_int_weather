@@ -9,7 +9,7 @@ from pathlib import Path
 import bentoml
 import jwt
 import pandas as pd
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -22,84 +22,15 @@ ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin")
 
 
-# 1. Define Runners
-def load_xgboost_runner():
-    model_name = "rain_prediction_model"
-    tag = f"{model_name}:latest"
-
-    try:
-        # Try finding in BentoML local store
-        return bentoml.xgboost.get(tag).to_runner()
-    except Exception as e:
-        logger.warning(f"Could not load model '{tag}' from BentoML store: {e}")
-
-        # Fallback: Check for pickle file
-        pickle_path = Path("models/xgboost_model.pkl")
-        if pickle_path.exists():
-            logger.info(f"Fallback: Loading model from {pickle_path}...")
-            try:
-                with open(pickle_path, "rb") as f:
-                    model = pickle.load(f)
-
-                # Save to BentoML store to fix future lookups
-                bentoml.xgboost.save_model(model_name, model)
-                logger.info(f"Model saved to BentoML store as '{model_name}'")
-
-                # Try loading again
-                return bentoml.xgboost.get(tag).to_runner()
-            except Exception as load_error:
-                logger.error(f"Failed to load/save model from pickle: {load_error}")
-                raise
-        else:
-            logger.error(
-                f"Critical: Model not found in store AND pickle not found at {pickle_path}"
-            )
-            # We cannot proceed without a runner.
-            raise RuntimeError(f"Model {model_name} not found locally or as pickle.") from e
-
-
-xgboost_runner = load_xgboost_runner()
-
-
-# 2. Input Schemas
-class RainInput(BaseModel):
-    # Key meteorological features
-    MinTemp: float = Field(..., description="Minimum temperature in degrees Celsius")
-    MaxTemp: float = Field(..., description="Maximum temperature in degrees Celsius")
-    Rainfall: float = Field(..., description="Rainfall in mm")
-    WindGustSpeed: float = Field(..., description="Peak wind gust speed in km/h")
-    WindSpeed9am: float = Field(..., description="Wind speed at 9am in km/h")
-    WindSpeed3pm: float = Field(..., description="Wind speed at 3pm in km/h")
-    Humidity9am: float = Field(..., description="Humidity at 9am in percent")
-    Humidity3pm: float = Field(..., description="Humidity at 3pm in percent")
-    Pressure9am: float = Field(..., description="Atmospheric pressure at 9am in hPa")
-    Pressure3pm: float = Field(..., description="Atmospheric pressure at 3pm in hPa")
-    Temp9am: float = Field(..., description="Temperature at 9am in degrees Celsius")
-    Temp3pm: float = Field(..., description="Temperature at 3pm in degrees Celsius")
-    RainToday: int = Field(..., description="1 if it rained today, 0 otherwise")
-    Year: int = Field(..., description="Year of the observation")
-
-    # Optional fields
-    Date: str | None = None
-    Location: str | None = None
-    WindGustDir: str | None = None
-    WindDir9am: str | None = None
-    WindDir3pm: str | None = None
-
-    model_config = ConfigDict(extra="allow")
-
-
-class LoginInput(BaseModel):
-    username: str = Field(..., description="Username")
-    password: str = Field(..., description="Password")
-
-
 # 3. Service Definition
 @bentoml.service(name="rain_prediction_service")
 class RainPredictionService:
     def __init__(self):
         # Load artifacts on startup
         self.preprocessor = None
+        self.model = None
+
+        # 1. Load Preprocessor
         try:
             artifact_path = Path("models/preprocessor.pkl")
             if artifact_path.exists():
@@ -112,6 +43,34 @@ class RainPredictionService:
                 )
         except Exception as e:
             logger.error(f"Failed to load preprocessing artifacts: {e}")
+
+        # 2. Load XGBoost Model
+        model_name = "rain_prediction_model"
+        tag = f"{model_name}:latest"
+        try:
+            # Try loading from BentoML store
+            self.model = bentoml.xgboost.load_model(tag)
+            logger.info(f"Loaded model '{tag}' from BentoML store.")
+        except Exception as e:
+            logger.warning(f"Could not load model '{tag}' from BentoML store: {e}")
+            # Fallback to pickle
+            pickle_path = Path("models/xgboost_model.pkl")
+            if pickle_path.exists():
+                logger.info(f"Fallback: Loading model from {pickle_path}...")
+                try:
+                    with open(pickle_path, "rb") as f:
+                        self.model = pickle.load(f)
+                    # Save to BentoML store for future
+                    bentoml.xgboost.save_model(model_name, self.model)
+                    logger.info(f"Model saved to BentoML store as '{model_name}'")
+                except Exception as load_error:
+                    logger.error(f"Failed to load/save model from pickle: {load_error}")
+                    raise
+            else:
+                logger.error(
+                    f"Critical: Model not found in store AND pickle not found at {pickle_path}"
+                )
+                raise RuntimeError(f"Model {model_name} not found.") from None
 
     def get_season_aus(self, month):
         if month in [12, 1, 2]:
@@ -191,24 +150,40 @@ class RainPredictionService:
             raise Exception(f"Auth error: {e}") from e
 
     @bentoml.api
-    def login(self, input_data: LoginInput) -> dict:
-        if input_data.username == ADMIN_USERNAME and input_data.password == ADMIN_PASSWORD:
-            token = jwt.encode(
-                {"username": input_data.username}, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM
-            )
+    def login(self, username: str = ADMIN_USERNAME, password: str = ADMIN_PASSWORD) -> dict:
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            token = jwt.encode({"username": username}, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
             return {"token": token}
         else:
-            # ctx not available in sync api? It is if argument.
-            # But let's raise simple error
-            # Or use ctx argument
             return {
                 "detail": "Invalid credentials",
                 "status": 401,
-            }  # BentoML handles return values?
-            # Better to use ctx to set status code if possible, but let's keep it simple.
+            }
 
     @bentoml.api
-    async def predict(self, input_data: RainInput, ctx: bentoml.Context) -> dict:
+    async def predict(
+        self,
+        ctx: bentoml.Context,
+        MinTemp: float = Field(..., description="Minimum temperature in degrees Celsius"),
+        MaxTemp: float = Field(..., description="Maximum temperature in degrees Celsius"),
+        Rainfall: float = Field(..., description="Rainfall in mm"),
+        WindGustSpeed: float = Field(..., description="Peak wind gust speed in km/h"),
+        WindSpeed9am: float = Field(..., description="Wind speed at 9am in km/h"),
+        WindSpeed3pm: float = Field(..., description="Wind speed at 3pm in km/h"),
+        Humidity9am: float = Field(..., description="Humidity at 9am in percent"),
+        Humidity3pm: float = Field(..., description="Humidity at 3pm in percent"),
+        Pressure9am: float = Field(..., description="Atmospheric pressure at 9am in hPa"),
+        Pressure3pm: float = Field(..., description="Atmospheric pressure at 3pm in hPa"),
+        Temp9am: float = Field(..., description="Temperature at 9am in degrees Celsius"),
+        Temp3pm: float = Field(..., description="Temperature at 3pm in degrees Celsius"),
+        RainToday: int = Field(..., description="1 if it rained today, 0 otherwise"),
+        Year: int = Field(..., description="Year of the observation"),
+        Date: str | None = None,
+        Location: str | None = None,
+        WindGustDir: str | None = None,
+        WindDir9am: str | None = None,
+        WindDir3pm: str | None = None,
+    ) -> dict:
         try:
             self.verify_auth(ctx)
         except Exception as e:
@@ -218,9 +193,34 @@ class RainPredictionService:
             return {"detail": str(e)}
 
         try:
-            data_dict = input_data.model_dump()
+            data_dict = {
+                "MinTemp": MinTemp,
+                "MaxTemp": MaxTemp,
+                "Rainfall": Rainfall,
+                "WindGustSpeed": WindGustSpeed,
+                "WindSpeed9am": WindSpeed9am,
+                "WindSpeed3pm": WindSpeed3pm,
+                "Humidity9am": Humidity9am,
+                "Humidity3pm": Humidity3pm,
+                "Pressure9am": Pressure9am,
+                "Pressure3pm": Pressure3pm,
+                "Temp9am": Temp9am,
+                "Temp3pm": Temp3pm,
+                "RainToday": RainToday,
+                "Year": Year,
+                "Date": Date,
+                "Location": Location,
+                "WindGustDir": WindGustDir,
+                "WindDir9am": WindDir9am,
+                "WindDir3pm": WindDir3pm,
+            }
+
             df = self.preprocess_input(data_dict)
-            prediction = await xgboost_runner.predict.async_run(df)
+
+            # Use direct model prediction instead of runner
+            prediction = self.model.predict(df)
+
+            # Handle prediction output (might be numpy array)
             pred_value = int(prediction[0])
             return {
                 "prediction": pred_value,

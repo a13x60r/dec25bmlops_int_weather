@@ -1,0 +1,109 @@
+{
+  "uid": "mlops-pipeline",
+  "title": "MLOps Pipeline",
+  "tags": ["mlops", "pipeline", "airflow"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Executor Running Tasks",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 0, "y": 0, "w": 6, "h": 6},
+      "targets": [
+        {"expr": "max(airflow_executor_running_tasks)", "legendFormat": "running"}
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Executor Queued Tasks",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 6, "y": 0, "w": 6, "h": 6},
+      "targets": [
+        {"expr": "max(airflow_executor_queued_tasks)", "legendFormat": "queued"}
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Scheduler Executable Tasks",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 12, "y": 0, "w": 6, "h": 6},
+      "targets": [
+        {"expr": "max(airflow_scheduler_tasks_executable)", "legendFormat": "executable"}
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Scheduler Tasks Starving",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 18, "y": 0, "w": 6, "h": 6},
+      "targets": [
+        {"expr": "max(airflow_scheduler_tasks_starving)", "legendFormat": "starving"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Scheduler Loop Duration (s)",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 0, "y": 6, "w": 12, "h": 8},
+      "targets": [
+        {"expr": "airflow_scheduler_scheduler_loop_duration{quantile=\"0.5\"}", "legendFormat": "p50"},
+        {"expr": "airflow_scheduler_scheduler_loop_duration{quantile=\"0.9\"}", "legendFormat": "p90"},
+        {"expr": "airflow_scheduler_scheduler_loop_duration{quantile=\"0.99\"}", "legendFormat": "p99"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Scheduler Critical Section (s)",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 12, "y": 6, "w": 12, "h": 8},
+      "targets": [
+        {"expr": "airflow_scheduler_critical_section_duration{quantile=\"0.5\"}", "legendFormat": "p50"},
+        {"expr": "airflow_scheduler_critical_section_duration{quantile=\"0.9\"}", "legendFormat": "p90"},
+        {"expr": "airflow_scheduler_critical_section_duration{quantile=\"0.99\"}", "legendFormat": "p99"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Training Model Metrics",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 0, "y": 14, "w": 12, "h": 8},
+      "targets": [
+        {"expr": "max(model_f1_score)", "legendFormat": "f1"},
+        {"expr": "max(model_roc_auc)", "legendFormat": "roc_auc"},
+        {"expr": "max(model_pr_auc)", "legendFormat": "pr_auc"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Training Improvement (%)",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 12, "y": 14, "w": 12, "h": 8},
+      "targets": [
+        {"expr": "max(model_improvement_pct)", "legendFormat": "improvement"}
+      ]
+    }
+  ]
+}

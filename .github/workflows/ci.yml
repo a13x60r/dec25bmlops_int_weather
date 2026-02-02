@@ -34,14 +34,14 @@ jobs:
         dvc remote modify --local origin user ${{ secrets.DAGSHUB_USERNAME }}
         dvc remote modify --local origin password ${{ secrets.DAGSHUB_TOKEN }}
 
-    - name: Pull data
-      run: |
-        dvc pull
-
     - name: Lint with Ruff
       run: |
         ruff check .
         ruff format --check .
+
+    - name: Pull data
+      run: |
+        dvc pull
 
     - name: Test with pytest
       run: |

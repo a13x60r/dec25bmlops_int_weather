@@ -1,0 +1,103 @@
+{
+  "uid": "mlops-infra",
+  "title": "MLOps Infrastructure",
+  "tags": ["mlops", "infra"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Container CPU (cores)",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+      "targets": [
+        {"expr": "sum(rate(container_cpu_usage_seconds_total[5m]))", "legendFormat": "cpu_cores"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Container Memory (GB)",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+      "targets": [
+        {"expr": "sum(container_memory_usage_bytes) / 1024 / 1024 / 1024", "legendFormat": "mem_gb"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Container FS Usage (GB)",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
+      "targets": [
+        {"expr": "sum(container_fs_usage_bytes) by (container_label_com_docker_compose_service) / 1024 / 1024 / 1024", "legendFormat": "{{container_label_com_docker_compose_service}}"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Container CPU (cAdvisor)",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8},
+      "targets": [
+        {"expr": "sum(rate(container_cpu_usage_seconds_total[5m])) by (container_label_com_docker_compose_service)", "legendFormat": "{{container_label_com_docker_compose_service}}"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Container Memory (MB)",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 0, "y": 16, "w": 12, "h": 8},
+      "targets": [
+        {"expr": "sum(container_memory_usage_bytes) by (container_label_com_docker_compose_service) / 1024 / 1024", "legendFormat": "{{container_label_com_docker_compose_service}}"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Postgres Connections",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 12, "y": 16, "w": 12, "h": 8},
+      "targets": [
+        {"expr": "sum(pg_stat_activity_count)", "legendFormat": "connections"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "MinIO Requests",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 0, "y": 24, "w": 12, "h": 8},
+      "targets": [
+        {"expr": "sum(rate(minio_http_requests_total[5m]))", "legendFormat": "requests"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "MinIO Storage Used (GB)",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 12, "y": 24, "w": 12, "h": 8},
+      "targets": [
+        {"expr": "minio_cluster_capacity_usable_total_bytes / 1024 / 1024 / 1024", "legendFormat": "usable_gb"}
+      ]
+    }
+  ]
+}

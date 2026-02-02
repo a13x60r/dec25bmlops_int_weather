@@ -11,22 +11,17 @@ Usage:
 
 import pickle
 import subprocess
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 import pandas as pd
 import yaml
 from fastapi import FastAPI, HTTPException
 
-app = FastAPI(title="Rain Prediction API")
 
-MODEL_PATH = Path("models/xgboost_model.pkl")
-model = None
-
-
-# Load model when API starts
-@app.on_event("startup")
-async def load_model():
-    """Load model at startup"""
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Load model
     global model
     try:
         with open(MODEL_PATH, "rb") as f:
@@ -34,6 +29,17 @@ async def load_model():
         print(f"Model loaded from {MODEL_PATH}")
     except Exception:
         print("No model found. Please train first.")
+
+    yield
+
+    # Shutdown: Clean up if needed (nothing for now)
+    model = None
+
+
+app = FastAPI(title="Rain Prediction API", lifespan=lifespan)
+
+MODEL_PATH = Path("models/xgboost_model.pkl")
+model = None
 
 
 # Endpoint 1: Train model

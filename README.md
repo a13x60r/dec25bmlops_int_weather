@@ -64,7 +64,7 @@ It extends the classic *cookiecutter data science* structure with **[data versio
 | - [x] **BentoML** | Model serving |
 | - [x] **Jenkins** | CI/CD |
 | - [x] **GitHub Actions** | CI/CD |
-| - [ ] **Prometheus/Grafana** | Monitoring & drift |
+| - [x] **Prometheus/Grafana** | Monitoring & drift |
 
 ---
 
@@ -78,6 +78,7 @@ It extends the classic *cookiecutter data science* structure with **[data versio
 *   **BentoML API**: Prediction service (`http://localhost:3000`)
 *   **Trainer**: Runs [`src/models/train_model.py`](src/models/train_model.py) with DVC/MLflow
 *   **Dev**: Interactive container for local development and DVC repro
+*   **Streamlit App**: Interactive UI for predictions (`http://localhost:8501`)
 
 **Airflow services**
 
@@ -85,6 +86,17 @@ It extends the classic *cookiecutter data science* structure with **[data versio
 *   **Airflow Scheduler**: Orchestration
 *   **Airflow Postgres + Init**: Metadata DB + bootstrap
 *   **Failure alerts**: Slack notifications on task failure (optional)
+
+**Monitoring services (Docker Compose profile: monitoring)**
+
+*   **Prometheus**: Metrics (`http://localhost:9090`)
+*   **Grafana**: Dashboards (`http://localhost:3001`, `admin/admin`)
+*   **Loki**: Log aggregation (`http://localhost:3100`)
+*   **Tempo**: Traces (`http://localhost:3200`)
+*   **Pushgateway**: Training metrics (`http://localhost:9091`)
+*   **Exporters**: Airflow StatsD, Postgres, Node, cAdvisor
+
+Grafana dashboards are provisioned under the **MLOps** folder from `grafana/dashboards`.
 
 **Pipelines & orchestration**
 
@@ -179,6 +191,11 @@ It extends the classic *cookiecutter data science* structure with **[data versio
     *   **MinIO Console**: [http://localhost:9001](http://localhost:9001)
     *   **Postgres**: `localhost:5432`
 
+    **Optional: Start monitoring stack**
+    ```bash
+    docker compose --profile monitoring up -d
+    ```
+
 2.  **Run Training**:
     *   **Via Service**: `docker compose --profile train up`
     *   **Via Dev Container (Recommended)**:
@@ -199,7 +216,7 @@ It extends the classic *cookiecutter data science* structure with **[data versio
         ```bash
         curl -X POST "http://localhost:3000/login" \
              -H "Content-Type: application/json" \
-             -d '{"input_data": {"username": "admin", "password": "admin"}}'
+             -d '{"username": "admin", "password": "admin"}'
         ```
         *Response*: `{"token": "YOUR_TOKEN"}`
 
@@ -209,14 +226,20 @@ It extends the classic *cookiecutter data science* structure with **[data versio
              -H "Content-Type: application/json" \
              -H "Authorization: Bearer <YOUR_TOKEN>" \
              -d '{
-                   "input_data": {
-                       "MinTemp": 10.5, "MaxTemp": 25.0, "Rainfall": 0.0, "WindGustSpeed": 30.0,
-                       "WindSpeed9am": 10.0, "WindSpeed3pm": 15.0, "Humidity9am": 60.0, "Humidity3pm": 40.0,
-                       "Pressure9am": 1015.0, "Pressure3pm": 1012.0, "Temp9am": 15.0, "Temp3pm": 22.0,
-                       "RainToday": 0, "Year": 2023
-                   }
+                   "MinTemp": 10.5, "MaxTemp": 25.0, "Rainfall": 0.0, "WindGustSpeed": 30.0,
+                   "WindSpeed9am": 10.0, "WindSpeed3pm": 15.0, "Humidity9am": 60.0, "Humidity3pm": 40.0,
+                   "Pressure9am": 1015.0, "Pressure3pm": 1012.0, "Temp9am": 15.0, "Temp3pm": 22.0,
+                   "RainToday": 0, "Year": 2023
                  }'
         ```
+
+4.  **Run Streamlit App**:
+    Access the interactive UI to verify the model:
+    ```bash
+    docker compose up -d streamlit
+    ```
+    *   **URL**: [http://localhost:8501](http://localhost:8501)
+    *   The app communicates with the API service automatically within the docker network.
 
 ### Option C: Run with Airflow Orchestration
 
@@ -365,6 +388,8 @@ docker compose exec dev python [src/models/predict_model.py](src/models/predict_
 The pipeline tracks the following metrics for model evaluation:
 -   **Classification:** ROC-AUC, F1, Precision, Recall, PR-AUC
 -   **MLOps:** Latency (p95), error rate, data drift (PSI / KS)
+
+Training metrics are pushed to Prometheus via Pushgateway during `src/models/train_model.py` runs.
 
 ---
 

@@ -14,6 +14,7 @@ Usage: python src/models/train_model.py --split_id 1
 """
 
 import argparse
+import os
 import pickle
 import sys
 from pathlib import Path
@@ -25,8 +26,10 @@ import pandas as pd
 import xgboost as xgb
 from imblearn.over_sampling import SMOTE
 from mlflow.tracking import MlflowClient
+from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
 from sklearn.metrics import (
     accuracy_score,
+    average_precision_score,
     classification_report,
     confusion_matrix,
     f1_score,
@@ -46,6 +49,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 MLFLOW_TRACKING_URI = MLFLOW_URI
 EXPERIMENT_NAME = PARAMS["mlflow"]["experiment_name"]
 MODEL_NAME = "RainTomorrow_XGBoost"
+PUSHGATEWAY_URL = os.environ.get("PROMETHEUS_PUSHGATEWAY", "http://pushgateway:9091")
 
 try:
     mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
@@ -115,6 +119,7 @@ def get_current_production_model():
 # Training function
 def train_model(split_id=None):
     print(f"Training on split {split_id} (MLflow mode)")
+    model_details = None
 
     # ==================== Step 1: Load Data ====================
     X_train, X_test, y_train, y_test, split_info = load_split_data(split_id)
@@ -200,6 +205,7 @@ def train_model(split_id=None):
 
         y_pred = model.predict(X_test)
         y_pred_proba = model.predict_proba(X_test)[:, 1]
+        pr_auc = average_precision_score(y_test, y_pred_proba)
 
         metrics = {
             "f1_score": f1_score(y_test, y_pred),
@@ -207,6 +213,7 @@ def train_model(split_id=None):
             "precision": precision_score(y_test, y_pred),
             "recall": recall_score(y_test, y_pred),
             "roc_auc": roc_auc_score(y_test, y_pred_proba),
+            "pr_auc": pr_auc,
         }
 
         if mlflow_run:
@@ -290,6 +297,72 @@ def train_model(split_id=None):
             else:
                 print(f"Keeping current production (v{current_model_version.version})")
                 print(f"New model registered as v{model_details.version} but not promoted")
+
+        model_version = str(model_details.version) if model_details else "unknown"
+        split_label = str(split_id) if split_id else "unknown"
+        years_label = split_info["years"] if split_info else "unknown"
+        improvement = ((new_f1 - current_f1) / current_f1 * 100) if current_f1 > 0 else 100.0
+
+        registry = CollectorRegistry()
+        labels = [MODEL_NAME, model_version, split_label, years_label]
+
+        Gauge(
+            "model_f1_score",
+            "Model F1 score",
+            ["model_name", "model_version", "split_id", "years"],
+            registry=registry,
+        ).labels(*labels).set(metrics["f1_score"])
+        Gauge(
+            "model_roc_auc",
+            "Model ROC-AUC",
+            ["model_name", "model_version", "split_id", "years"],
+            registry=registry,
+        ).labels(*labels).set(metrics["roc_auc"])
+        Gauge(
+            "model_pr_auc",
+            "Model PR-AUC",
+            ["model_name", "model_version", "split_id", "years"],
+            registry=registry,
+        ).labels(*labels).set(metrics["pr_auc"])
+        Gauge(
+            "model_precision",
+            "Model precision",
+            ["model_name", "model_version", "split_id", "years"],
+            registry=registry,
+        ).labels(*labels).set(metrics["precision"])
+        Gauge(
+            "model_recall",
+            "Model recall",
+            ["model_name", "model_version", "split_id", "years"],
+            registry=registry,
+        ).labels(*labels).set(metrics["recall"])
+        Gauge(
+            "model_accuracy",
+            "Model accuracy",
+            ["model_name", "model_version", "split_id", "years"],
+            registry=registry,
+        ).labels(*labels).set(metrics["accuracy"])
+        Gauge(
+            "model_improvement_pct",
+            "Improvement vs production in percent",
+            ["model_name", "model_version", "split_id", "years"],
+            registry=registry,
+        ).labels(*labels).set(improvement)
+        Gauge(
+            "model_is_better",
+            "1 if model improved over production",
+            ["model_name", "model_version", "split_id", "years"],
+            registry=registry,
+        ).labels(*labels).set(1.0 if is_better else 0.0)
+
+        try:
+            push_to_gateway(
+                PUSHGATEWAY_URL,
+                job="model_training",
+                registry=registry,
+            )
+        except Exception as e:
+            print(f"WARNING: Failed to push metrics to Pushgateway: {e}")
 
         # ==================== Step 10: Save as Pickle ====================
         models_dir = Path("models")
