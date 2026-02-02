@@ -1,4 +1,11 @@
 services:
+  weather_trainer_image:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dec25bmlops_int_weather-trainer:latest
+    command: [ "bash", "-lc", "exit 0" ]
+    restart: "no"
   postgres:
     image: postgres:16
     container_name: mlops_postgres
@@ -91,6 +98,7 @@ services:
       WANDB_MODE: online
     volumes:
       - ./:/workspace
+      - weather_data:/workspace/data
       - pip_cache:/root/.cache/pip
     working_dir: /workspace
     command: [ "bash", "-lc", "pip install -e . -r requirements.txt && tail -f /dev/null" ]
@@ -260,7 +268,7 @@ services:
   prometheus:
     image: prom/prometheus:v2.54.1
     container_name: mlops_prometheus
-    profiles: ["monitoring"]
+    profiles: [ "monitoring" ]
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
@@ -274,7 +282,7 @@ services:
   grafana:
     image: grafana/grafana:11.3.0
     container_name: mlops_grafana
-    profiles: ["monitoring"]
+    profiles: [ "monitoring" ]
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
@@ -293,8 +301,8 @@ services:
   loki:
     image: grafana/loki:3.2.0
     container_name: mlops_loki
-    profiles: ["monitoring"]
-    command: ["-config.file=/etc/loki/config.yml"]
+    profiles: [ "monitoring" ]
+    command: [ "-config.file=/etc/loki/config.yml" ]
     volumes:
       - ./loki-config.yml:/etc/loki/config.yml:ro
       - loki_data:/loki
@@ -304,8 +312,8 @@ services:
   promtail:
     image: grafana/promtail:3.2.0
     container_name: mlops_promtail
-    profiles: ["monitoring"]
-    command: ["-config.file=/etc/promtail/config.yml"]
+    profiles: [ "monitoring" ]
+    command: [ "-config.file=/etc/promtail/config.yml" ]
     volumes:
       - ./promtail-config.yml:/etc/promtail/config.yml:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
@@ -316,8 +324,8 @@ services:
   tempo:
     image: grafana/tempo:2.6.1
     container_name: mlops_tempo
-    profiles: ["monitoring"]
-    command: ["-config.file=/etc/tempo/tempo.yml"]
+    profiles: [ "monitoring" ]
+    command: [ "-config.file=/etc/tempo/tempo.yml" ]
     volumes:
       - ./tempo.yml:/etc/tempo/tempo.yml:ro
       - tempo_data:/tmp/tempo
@@ -329,8 +337,8 @@ services:
   otel-collector:
     image: otel/opentelemetry-collector:0.105.0
     container_name: mlops_otel_collector
-    profiles: ["monitoring"]
-    command: ["--config=/etc/otel-collector.yml"]
+    profiles: [ "monitoring" ]
+    command: [ "--config=/etc/otel-collector.yml" ]
     volumes:
       - ./otel-collector.yml:/etc/otel-collector.yml:ro
     ports:
@@ -342,7 +350,7 @@ services:
   statsd-exporter:
     image: prom/statsd-exporter:v0.26.0
     container_name: mlops_statsd_exporter
-    profiles: ["monitoring"]
+    profiles: [ "monitoring" ]
     ports:
       - "9125:9125/udp"
       - "9102:9102"
@@ -350,14 +358,14 @@ services:
   pushgateway:
     image: prom/pushgateway:v1.9.0
     container_name: mlops_pushgateway
-    profiles: ["monitoring"]
+    profiles: [ "monitoring" ]
     ports:
       - "9091:9091"
 
   postgres-exporter-mlflow:
     image: prometheuscommunity/postgres-exporter:v0.15.0
     container_name: mlops_postgres_exporter_mlflow
-    profiles: ["monitoring"]
+    profiles: [ "monitoring" ]
     environment:
       DATA_SOURCE_NAME: postgresql://mlflow:mlflow@postgres:5432/mlflow?sslmode=disable
     depends_on:
@@ -366,7 +374,7 @@ services:
   postgres-exporter-airflow:
     image: prometheuscommunity/postgres-exporter:v0.15.0
     container_name: mlops_postgres_exporter_airflow
-    profiles: ["monitoring"]
+    profiles: [ "monitoring" ]
     environment:
       DATA_SOURCE_NAME: postgresql://airflow:airflow@airflow-postgres:5432/airflow?sslmode=disable
     depends_on:
@@ -375,7 +383,7 @@ services:
   node-exporter:
     image: prom/node-exporter:v1.8.2
     container_name: mlops_node_exporter
-    profiles: ["monitoring"]
+    profiles: [ "monitoring" ]
     command:
       - "--path.rootfs=/host"
     volumes:
@@ -386,7 +394,7 @@ services:
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.49.1
     container_name: mlops_cadvisor
-    profiles: ["monitoring"]
+    profiles: [ "monitoring" ]
     volumes:
       - /:/rootfs:ro
       - /var/run/docker.sock:/var/run/docker.sock
@@ -404,3 +412,9 @@ volumes:
   grafana_data:
   loki_data:
   tempo_data:
+  weather_data:
+    name: weather_data
+
+networks:
+  default:
+    name: dec25bmlops_int_weather_default
