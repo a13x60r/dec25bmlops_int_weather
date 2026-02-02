@@ -1,0 +1,103 @@
+{
+  "uid": "mlops-drift",
+  "title": "MLOps Drift",
+  "tags": ["mlops", "drift"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Dataset Drift Detected",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 0, "y": 0, "w": 6, "h": 6},
+      "targets": [
+        {
+          "expr": "max(data_drift_dataset_detected)",
+          "legendFormat": "drift_detected"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Drifted Feature Share",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 6, "y": 0, "w": 6, "h": 6},
+      "targets": [
+        {
+          "expr": "max(data_drift_share)",
+          "legendFormat": "share"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Drifted Feature Count",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 12, "y": 0, "w": 6, "h": 6},
+      "targets": [
+        {
+          "expr": "max(data_drift_feature_count)",
+          "legendFormat": "drifted_features"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Evaluated Feature Count",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 18, "y": 0, "w": 6, "h": 6},
+      "targets": [
+        {
+          "expr": "max(data_drift_total_feature_count)",
+          "legendFormat": "total_features"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Drift Share Over Time",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 0, "y": 6, "w": 12, "h": 8},
+      "targets": [
+        {
+          "expr": "max(data_drift_share) by (model_name, reference_split, current_split)",
+          "legendFormat": "{{model_name}} ref={{reference_split}} cur={{current_split}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Drifted Feature Count Over Time",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 12, "y": 6, "w": 12, "h": 8},
+      "targets": [
+        {
+          "expr": "max(data_drift_feature_count) by (model_name, reference_split, current_split)",
+          "legendFormat": "{{model_name}} ref={{reference_split}} cur={{current_split}}"
+        }
+      ]
+    }
+  ]
+}

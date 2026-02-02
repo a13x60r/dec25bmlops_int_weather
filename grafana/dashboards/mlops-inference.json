@@ -127,6 +127,54 @@
           "legendFormat": "cpu"
         }
       ]
+    },
+    {
+      "type": "stat",
+      "title": "Dataset Drift Detected",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 0, "y": 22, "w": 6, "h": 6},
+      "targets": [
+        {
+          "expr": "max(data_drift_dataset_detected)",
+          "legendFormat": "drift_detected"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Drifted Feature Share",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 6, "y": 22, "w": 6, "h": 6},
+      "targets": [
+        {
+          "expr": "max(data_drift_share)",
+          "legendFormat": "share"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Drifted Feature Count",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 12, "y": 22, "w": 6, "h": 6},
+      "targets": [
+        {
+          "expr": "max(data_drift_feature_count)",
+          "legendFormat": "drifted_features"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Drift Share Over Time",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"x": 18, "y": 22, "w": 6, "h": 6},
+      "targets": [
+        {
+          "expr": "max(data_drift_share) by (model_name, reference_split, current_split)",
+          "legendFormat": "{{model_name}} ref={{reference_split}} cur={{current_split}}"
+        }
+      ]
     }
   ]
 }

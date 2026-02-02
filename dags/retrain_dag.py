@@ -82,6 +82,20 @@ with DAG(
         environment=DOCKER_ENV,
     )
 
+    drift_check = DockerOperator(
+        task_id="drift_check",
+        image="dec25bmlops_int_weather-trainer:latest",
+        api_version="auto",
+        auto_remove=True,
+        command='bash -lc "python src/monitoring/evidently_drift.py --pushgateway-url http://pushgateway:9091"',
+        docker_url="unix:///var/run/docker.sock",
+        network_mode="dec25bmlops_int_weather_default",
+        mount_tmp_dir=False,
+        working_dir="/app",
+        mounts=DOCKER_MOUNTS,
+        environment=DOCKER_ENV,
+    )
+
     # 3. Train Model
     train_model = DockerOperator(
         task_id="train_model",
@@ -99,4 +113,4 @@ with DAG(
     )
 
     # Define Dependency Chain
-    preprocess_data >> prepare_splits >> train_model
+    preprocess_data >> prepare_splits >> drift_check >> train_model

@@ -27,6 +27,7 @@ dependencies = [
     "bentoml==1.4.33",
     "pyjwt==2.9.0",
     "protobuf<5.0.0",
+    "evidently==0.4.24",
 ]
 
 [tool.setuptools]
