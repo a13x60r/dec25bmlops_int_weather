@@ -9,7 +9,7 @@ from pathlib import Path
 import bentoml
 import jwt
 import pandas as pd
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -29,7 +29,7 @@ class RainPredictionService:
         # Load artifacts on startup
         self.preprocessor = None
         self.model = None
-        
+
         # 1. Load Preprocessor
         try:
             artifact_path = Path("models/preprocessor.pkl")
@@ -67,8 +67,10 @@ class RainPredictionService:
                     logger.error(f"Failed to load/save model from pickle: {load_error}")
                     raise
             else:
-                logger.error(f"Critical: Model not found in store AND pickle not found at {pickle_path}")
-                raise RuntimeError(f"Model {model_name} not found.")
+                logger.error(
+                    f"Critical: Model not found in store AND pickle not found at {pickle_path}"
+                )
+                raise RuntimeError(f"Model {model_name} not found.") from None
 
     def get_season_aus(self, month):
         if month in [12, 1, 2]:
@@ -150,9 +152,7 @@ class RainPredictionService:
     @bentoml.api
     def login(self, username: str = ADMIN_USERNAME, password: str = ADMIN_PASSWORD) -> dict:
         if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-            token = jwt.encode(
-                {"username": username}, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM
-            )
+            token = jwt.encode({"username": username}, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
             return {"token": token}
         else:
             return {
@@ -214,12 +214,12 @@ class RainPredictionService:
                 "WindDir9am": WindDir9am,
                 "WindDir3pm": WindDir3pm,
             }
-            
+
             df = self.preprocess_input(data_dict)
-            
+
             # Use direct model prediction instead of runner
             prediction = self.model.predict(df)
-            
+
             # Handle prediction output (might be numpy array)
             pred_value = int(prediction[0])
             return {
