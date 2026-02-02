@@ -20,7 +20,7 @@ Weather Forecast in Australia — MLOps
 [![GHCR Image](https://img.shields.io/badge/GHCR-image-181717?logo=github)](https://github.com/a13x60r?tab=packages)
 [![Last Commit](https://img.shields.io/github/last-commit/a13x60r/dec25bmlops_int_weather)](https://github.com/a13x60r/dec25bmlops_int_weather/commits/master)
 
-[![Usage](https://img.shields.io/badge/Usage-Quickstart-0B5FFF)](#usage-guide)
+[![Usage](https://img.shields.io/badge/Usage-Quickstart-0B5FFF)](#quickstart)
 [![Services](https://img.shields.io/badge/Services-Overview-0B5FFF)](#services--features)
 [![CI/CD](https://img.shields.io/badge/CI%2FCD-Pipelines-0B5FFF)](#cicd)
 [![API](https://img.shields.io/badge/API-Swagger-0B5FFF)](#option-b-run-with-docker)
@@ -35,6 +35,7 @@ It extends the classic *cookiecutter data science* structure with **[data versio
 
 ## Table of Contents
 
+* [Quickstart](#quickstart)
 * [MLOps Stack](#mlops-stack)
 
 * [Services & Features](#services--features)
@@ -52,6 +53,43 @@ It extends the classic *cookiecutter data science* structure with **[data versio
 * [Project Organization](#project-organization)
 * [CI/CD](#cicd)
 * [References](#references)
+
+---
+
+## Quickstart
+
+Get the application running locally with Docker in 3 steps:
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/a13x60r/dec25bmlops_int_weather.git
+   cd dec25bmlops_int_weather
+   ```
+
+2. **Configure Environment:**
+   Create a `.env` file from the example:
+
+   ```bash
+   # Linux/Mac
+   cp .env.example .env
+
+   # Windows (PowerShell)
+   copy .env.example .env
+   ```
+
+   *Optional: Edit `.env` to add your `OPENWEATHER_API_KEY` if you want real-time data fetching.*
+
+3. **Start Services:**
+
+   ```bash
+   docker compose up -d --build
+   ```
+
+   **Access the App:**
+   * **Streamlit UI:** [http://localhost:8501](http://localhost:8501)
+   * **API (Swagger):** [http://localhost:3000](http://localhost:3000)
+   * **MLflow:** [http://localhost:5000](http://localhost:5000)
 
 ---
 
