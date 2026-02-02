@@ -78,6 +78,7 @@ It extends the classic *cookiecutter data science* structure with **[data versio
 *   **BentoML API**: Prediction service (`http://localhost:3000`)
 *   **Trainer**: Runs [`src/models/train_model.py`](src/models/train_model.py) with DVC/MLflow
 *   **Dev**: Interactive container for local development and DVC repro
+*   **Streamlit App**: Interactive UI for predictions (`http://localhost:8501`)
 
 **Airflow services**
 
@@ -215,7 +216,7 @@ Grafana dashboards are provisioned under the **MLOps** folder from `grafana/dash
         ```bash
         curl -X POST "http://localhost:3000/login" \
              -H "Content-Type: application/json" \
-             -d '{"input_data": {"username": "admin", "password": "admin"}}'
+             -d '{"username": "admin", "password": "admin"}'
         ```
         *Response*: `{"token": "YOUR_TOKEN"}`
 
@@ -225,14 +226,20 @@ Grafana dashboards are provisioned under the **MLOps** folder from `grafana/dash
              -H "Content-Type: application/json" \
              -H "Authorization: Bearer <YOUR_TOKEN>" \
              -d '{
-                   "input_data": {
-                       "MinTemp": 10.5, "MaxTemp": 25.0, "Rainfall": 0.0, "WindGustSpeed": 30.0,
-                       "WindSpeed9am": 10.0, "WindSpeed3pm": 15.0, "Humidity9am": 60.0, "Humidity3pm": 40.0,
-                       "Pressure9am": 1015.0, "Pressure3pm": 1012.0, "Temp9am": 15.0, "Temp3pm": 22.0,
-                       "RainToday": 0, "Year": 2023
-                   }
+                   "MinTemp": 10.5, "MaxTemp": 25.0, "Rainfall": 0.0, "WindGustSpeed": 30.0,
+                   "WindSpeed9am": 10.0, "WindSpeed3pm": 15.0, "Humidity9am": 60.0, "Humidity3pm": 40.0,
+                   "Pressure9am": 1015.0, "Pressure3pm": 1012.0, "Temp9am": 15.0, "Temp3pm": 22.0,
+                   "RainToday": 0, "Year": 2023
                  }'
         ```
+
+4.  **Run Streamlit App**:
+    Access the interactive UI to verify the model:
+    ```bash
+    docker compose up -d streamlit
+    ```
+    *   **URL**: [http://localhost:8501](http://localhost:8501)
+    *   The app communicates with the API service automatically within the docker network.
 
 ### Option C: Run with Airflow Orchestration
 
