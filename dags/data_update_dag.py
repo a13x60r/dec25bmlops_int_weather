@@ -6,7 +6,7 @@ from airflow.providers.docker.operators.docker import DockerOperator
 from docker.types import Mount
 from utils.slack import send_slack_alert
 
-weather_dataset = Dataset("file:///data/raw/weatherAUS.csv")
+weather_dataset = Dataset("file:///app/data/raw/weatherAUS.csv")
 
 default_args = {
     "owner": "airflow",
@@ -30,14 +30,16 @@ with DAG(
         auto_remove=True,
         # Re-installing requests just in case (though we added it to requirements, image rebuild might be pending in some contexts)
         # Actually we rebuilt the image in step 339, so requests should be there.
-        command='bash -lc "python src/data/fetch_weather_data.py"',
-        docker_url="unix://var/run/docker.sock",
+        command='bash -lc "mkdir -p data/raw && python src/data/fetch_weather_data.py"',
+        docker_url="unix:///var/run/docker.sock",
         network_mode="dec25bmlops_int_weather_default",
+        mount_tmp_dir=False,
+        working_dir="/app",
         mounts=[
             Mount(
-                source="C:/Users/aboro/Documents/dataScientist/dec25bmlops_int_weather",
-                target="/workspace",
-                type="bind",
+                source="weather_data",
+                target="/app/data",
+                type="volume",
             ),
         ],
         environment={
@@ -51,14 +53,16 @@ with DAG(
         image="dec25bmlops_int_weather-trainer:latest",
         api_version="auto",
         auto_remove=True,
-        command='bash -lc "python src/data/validate_data.py"',
-        docker_url="unix://var/run/docker.sock",
+        command='bash -lc "mkdir -p data/raw && python src/data/validate_data.py"',
+        docker_url="unix:///var/run/docker.sock",
         network_mode="dec25bmlops_int_weather_default",
+        mount_tmp_dir=False,
+        working_dir="/app",
         mounts=[
             Mount(
-                source="C:/Users/aboro/Documents/dataScientist/dec25bmlops_int_weather",
-                target="/workspace",
-                type="bind",
+                source="weather_data",
+                target="/app/data",
+                type="volume",
             ),
         ],
         outlets=[weather_dataset],

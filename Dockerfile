@@ -16,7 +16,11 @@ RUN python -m pip install --upgrade pip \
 
 COPY src ./src
 COPY pyproject.toml .
-COPY params.yaml dvc.yaml ./
+COPY params.yaml dvc.yaml dvc.lock ./
+COPY .dvc ./.dvc
+COPY data/raw/weatherAUS.csv.dvc data/raw/weatherAUS.csv.dvc
 COPY tests ./tests
+
+RUN mkdir -p /app/data/raw
 
 CMD ["python", "-m", "weather_au_mlops.train"]

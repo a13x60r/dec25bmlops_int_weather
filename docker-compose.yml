@@ -1,4 +1,11 @@
 services:
+  weather_trainer_image:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dec25bmlops_int_weather-trainer:latest
+    command: ["bash", "-lc", "exit 0"]
+    restart: "no"
   postgres:
     image: postgres:16
     container_name: mlops_postgres
@@ -90,6 +97,7 @@ services:
       WANDB_MODE: online
     volumes:
       - ./:/workspace
+      - weather_data:/workspace/data
       - pip_cache:/root/.cache/pip
     working_dir: /workspace
     command: [ "bash", "-lc", "pip install -e . && tail -f /dev/null" ]
@@ -232,3 +240,9 @@ volumes:
   minio_data:
   pip_cache:
   airflow_postgres_data:
+  weather_data:
+    name: weather_data
+
+networks:
+  default:
+    name: dec25bmlops_int_weather_default

@@ -9,7 +9,7 @@ from docker.types import Mount
 from utils.slack import send_slack_alert
 
 # Define the SAME dataset URI as the producer
-weather_dataset = Dataset("file:///data/raw/weatherAUS.csv")
+weather_dataset = Dataset("file:///app/data/raw/weatherAUS.csv")
 
 default_args = {
     "owner": "airflow",
@@ -35,9 +35,9 @@ DOCKER_ENV = {
 # Common Mounts
 DOCKER_MOUNTS = [
     Mount(
-        source="C:/Users/aboro/Documents/dataScientist/dec25bmlops_int_weather",
-        target="/workspace",
-        type="bind",
+        source="weather_data",
+        target="/app/data",
+        type="volume",
     ),
 ]
 
@@ -59,8 +59,10 @@ with DAG(
         # Configure remote -> repro 'process' stage -> push local changes (if any)
         # Note: We must config remote every time because container is ephemeral/stateless
         command='bash -lc "dvc remote modify origin --local user $DAGSHUB_USERNAME && dvc remote modify origin --local password $DAGSHUB_TOKEN && dvc repro process"',
-        docker_url="unix://var/run/docker.sock",
+        docker_url="unix:///var/run/docker.sock",
         network_mode="dec25bmlops_int_weather_default",
+        mount_tmp_dir=False,
+        working_dir="/app",
         mounts=DOCKER_MOUNTS,
         environment=DOCKER_ENV,
     )
@@ -72,8 +74,10 @@ with DAG(
         api_version="auto",
         auto_remove=True,
         command='bash -lc "dvc remote modify origin --local user $DAGSHUB_USERNAME && dvc remote modify origin --local password $DAGSHUB_TOKEN && dvc repro prepare_splits"',
-        docker_url="unix://var/run/docker.sock",
+        docker_url="unix:///var/run/docker.sock",
         network_mode="dec25bmlops_int_weather_default",
+        mount_tmp_dir=False,
+        working_dir="/app",
         mounts=DOCKER_MOUNTS,
         environment=DOCKER_ENV,
     )
@@ -86,8 +90,10 @@ with DAG(
         auto_remove=True,
         # repro train -> push results to DagsHub
         command='bash -lc "dvc remote modify origin --local user $DAGSHUB_USERNAME && dvc remote modify origin --local password $DAGSHUB_TOKEN && dvc repro train && dvc push"',
-        docker_url="unix://var/run/docker.sock",
+        docker_url="unix:///var/run/docker.sock",
         network_mode="dec25bmlops_int_weather_default",
+        mount_tmp_dir=False,
+        working_dir="/app",
         mounts=DOCKER_MOUNTS,
         environment=DOCKER_ENV,
     )
