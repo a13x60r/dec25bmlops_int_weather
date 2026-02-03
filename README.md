@@ -53,6 +53,9 @@ It extends the classic *cookiecutter data science* structure with **[data versio
 * [Project Organization](#project-organization)
 * [CI/CD](#cicd)
 * [References](#references)
+* [Documentation](#documentation)
+  * [API Reference](docs/10_api_reference.md)
+  * [Project Roadmap](docs/11_project_roadmap.md)
 
 ---
 

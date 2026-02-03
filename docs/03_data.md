@@ -1,10 +1,12 @@
 # Data
 
 ## Dataset provenance and format
+
 - Primary dataset is the Australian weather dataset (`weatherAUS.csv`) managed by DVC.
 - Live updates can be fetched from OpenWeatherMap into `data/raw/weatherAUS.csv` via the ingestion script.
 
 Evidence
+
 ```text
 # data/raw/weatherAUS.csv.dvc
 outs:
@@ -12,6 +14,7 @@ outs:
   size: 14098872
   path: weatherAUS.csv
 ```
+
 ```text
 # src/data/fetch_weather_data.py
 API_KEY = os.getenv("OPENWEATHER_API_KEY")
@@ -20,11 +23,13 @@ BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 ```
 
 ## Data versioning with DVC
+
 - DVC is configured with an `origin` remote using S3/MinIO (`s3://dvc`).
 - Pipeline stages are defined in `dvc.yaml` and locked in `dvc.lock`.
 - Repo includes `.dvc/` metadata and `data.dvc.backup` for DVC state.
 
 Evidence
+
 ```text
 # .dvc/config
 [core]
@@ -33,12 +38,14 @@ Evidence
 [remote "origin"]
     url = s3://dvc
 ```
+
 ```text
 # ls -la (excerpt)
 drwxr-xr-x 1 aboro 197609     0 Jan 30 19:10 .dvc
 -rw-r--r-- 1 aboro 197609   110 Jan 30 14:24 data.dvc.backup
 drwxr-xr-x 1 aboro 197609     0 Jan 30 19:10 data
 ```
+
 ```text
 $ cat dvc.yaml
 stages:
@@ -71,6 +78,7 @@ stages:
     outs:
       - models/xgboost_model.pkl
 ```
+
 ```text
 # dvc.lock (excerpt)
 stages:
@@ -94,16 +102,19 @@ stages:
 ```
 
 ## Data splits and features
+
 - Preprocessing engineers `Year` and `Season`, imputes missing values, one-hot encodes categorical fields, and scales numeric features.
 - Training splits are cumulative by year (2008-2016) with a fixed test set.
 
 Feature table (from preprocessing)
+
 - Numeric: `MinTemp`, `MaxTemp`, `Rainfall`, `WindGustSpeed`, `WindSpeed9am`, `WindSpeed3pm`, `Humidity9am`, `Humidity3pm`, `Pressure9am`, `Pressure3pm`, `Temp9am`, `Temp3pm`
 - Categorical (OHE): `Location`, `WindGustDir`, `WindDir9am`, `WindDir3pm`, `Season`
 - Engineered: `Year`
 - Target: `RainTomorrow`
 
 Evidence
+
 ```text
 # src/data/preprocess.py
 df["Date"] = pd.to_datetime(df["Date"])
@@ -129,6 +140,7 @@ numeric_cols = [
 ]
 categorical_cols_encoding = ["Location", "WindGustDir", "WindDir9am", "WindDir3pm", "Season"]
 ```
+
 ```text
 # src/data/training_data_splits_by_year.py
 metadata = {
@@ -144,9 +156,11 @@ for i, end_year in enumerate(years_available, 1):
 ```
 
 ## Data validation status
+
 - A lightweight validation script checks required columns and basic dataset health.
 
 Evidence
+
 ```text
 # src/data/validate_data.py
 REQUIRED_COLUMNS = [
@@ -164,12 +178,43 @@ if missing_cols:
 ```
 
 Status: Not present in repo
+
 - Formal schema validation or data quality checks (e.g., Great Expectations, pandera, or TensorFlow Data Validation).
 
 Expected in mature setup
+
 - Schema registry with type/range checks and automated report artifacts per DVC run.
 
 Actionable recommendations
+
 - Add a `data_validation` DVC stage and fail the pipeline on schema violations.
 - Store validation reports under `reports/` and log them to MLflow as artifacts.
 - Add unit tests that assert expected columns and distribution ranges for critical features.
+
+## Data Dictionary
+
+| Feature Name | Type | Description | Transformation / Handling |
+| :--- | :--- | :--- | :--- |
+| **RainTomorrow** | Binary | **Target Variable**. Did it rain the next day? (Yes/No) | Mapped to 0/1. Rows with missing values dropped. |
+| **RainToday** | Binary | Did it rain today? (Yes/No) | Mapped to 0/1. Cost to Integer. |
+| **Date** | Date | Date of observation | Used to extract `Year` and `Season`, then dropped. |
+| `MinTemp` | Float | Minimum temperature (°C) | Median imputation, Standard Scaled. |
+| `MaxTemp` | Float | Maximum temperature (°C) | Median imputation, Standard Scaled. |
+| `Rainfall` | Float | Rainfall amount (mm) | Median imputation, Standard Scaled. |
+| `WindGustSpeed` | Float | Speed of strongest wind gust (km/h) | Median imputation, Standard Scaled. |
+| `WindSpeed9am` | Float | Wind speed at 9am (km/h) | Median imputation, Standard Scaled. |
+| `WindSpeed3pm` | Float | Wind speed at 3pm (km/h) | Median imputation, Standard Scaled. |
+| `Humidity9am` | Float | Humidity at 9am (%) | Median imputation, Standard Scaled. |
+| `Humidity3pm` | Float | Humidity at 3pm (%) | Median imputation, Standard Scaled. |
+| `Pressure9am` | Float | Atmospheric pressure at 9am (hPa) | Median imputation, Standard Scaled. |
+| `Pressure3pm` | Float | Atmospheric pressure at 3pm (hPa) | Median imputation, Standard Scaled. |
+| `Temp9am` | Float | Temperature at 9am (°C) | Median imputation, Standard Scaled. |
+| `Temp3pm` | Float | Temperature at 3pm (°C) | Median imputation, Standard Scaled. |
+| `Location` | Cat | Weather station location name | One-Hot Encoded. |
+| `WindGustDir` | Cat | Direction of strongest wind gust | Mode imputation, One-Hot Encoded. |
+| `WindDir9am` | Cat | Wind direction at 9am | Mode imputation, One-Hot Encoded. |
+| `WindDir3pm` | Cat | Wind direction at 3pm | Mode imputation, One-Hot Encoded. |
+| `Season` | Cat | **Engineered**. Derived from Date (Summer, Autumn, Winter, Spring) | One-Hot Encoded. |
+| `Year` | Int | **Engineered**. Year of observation | Extracted from Date. Used for splitting strategies. |
+
+**Dropped Columns:** `Evaporation`, `Sunshine`, `Cloud9am`, `Cloud3pm` (>30% missing values).

@@ -1,6 +1,7 @@
 # Architecture
 
 ## System overview
+
 - Core pipeline: DVC stages build data and train an XGBoost model, tracked in MLflow and stored in MinIO, with promotion to Production based on F1.
 - Serving: BentoML service with JWT auth; FastAPI utility API exists for training/testing endpoints.
 - Orchestration: Airflow DAGs orchestrate daily data update and retraining via DockerOperator.
@@ -8,26 +9,43 @@
 - Observability: Prometheus scrapes services, Grafana dashboards, Loki/Promtail for logs, Tempo/OTel for traces.
 
 ## Mermaid flow
+
 ```mermaid
-flowchart LR
-  A[Raw data in DVC] --> B[Preprocess stage]
-  B --> C[Split by year]
-  C --> D[Train XGBoost]
-  D --> E[MLflow tracking + registry]
-  E --> F[Model artifact store (MinIO/S3)]
-  E --> G[BentoML service]
-  G --> H[API + Streamlit UI]
-  I[Airflow DAGs] --> B
-  I --> C
-  I --> D
-  J[Prometheus + Grafana] --> G
-  J --> D
-  K[Loki + Promtail] --> G
-  L[Tempo + OTel] --> G
+C4Container
+    title Container Diagram - Weather Prediction System
+
+    Person(data_scientist, "Data Scientist", "Develops models, runs experiments")
+    Person(end_user, "End User", "Uses Streamlit UI / API")
+
+    System_Boundary(c1, "MLOps Platform") {
+        Container(streamlit, "Streamlit UI", "Python, Streamlit", "User interface for predictions")
+        Container(api, "BentoML API", "Python, FastAPI", "Serves predictions via REST")
+        
+        Container(airflow, "Airflow", "Python, Docker", "Orchestrates pipelines (Retraining, Data Fetch)")
+        Container(mlflow, "MLflow", "Python", "Tracks experiments and models")
+        
+        ContainerDb(minio, "MinIO", "S3 Compatible", "Stores datasets (DVC) and model artifacts")
+        ContainerDb(postgres, "PostgreSQL", "SQL", "Metadata store for MLflow & Airflow")
+        
+        Container(observability, "Observability Stack", "Prometheus/Grafana", "Monitors drift and system health")
+    }
+
+    Rel(data_scientist, mlflow, "Tracks metrics", "HTTP")
+    Rel(end_user, streamlit, "Views forecasts", "HTTP")
+    Rel(streamlit, api, "Requests prediction", "REST/JSON")
+    
+    Rel(api, mlflow, "Loads model version", "S3/HTTP")
+    Rel(airflow, minio, "Reads/Writes data", "S3")
+    Rel(airflow, mlflow, "Registers/Promotes models", "HTTP")
+    
+    Rel(mlflow, postgres, "Persists metadata", "SQL")
+    Rel(mlflow, minio, "Persists artifacts", "S3")
 ```
 
 ## Infra placement (Postgres, MinIO, MLflow, API)
+
 Evidence (Docker Compose excerpt)
+
 ```text
 $ cat docker-compose.yml
 services:
@@ -73,6 +91,7 @@ services:
     ports:
       - "3000:3000"
 ```
+
 ```text
 # Dockerfile.mlflow
 FROM ghcr.io/mlflow/mlflow:v2.15.1
@@ -80,7 +99,9 @@ RUN pip install psycopg2-binary boto3
 ```
 
 ## Airflow orchestration
+
 Evidence (Airflow DAGs)
+
 ```text
 # dags/data_update_dag.py
 with DAG(
@@ -98,6 +119,7 @@ with DAG(
         outlets=[weather_dataset],
     )
 ```
+
 ```text
 # dags/retrain_dag.py
 with DAG(
@@ -119,7 +141,9 @@ with DAG(
 ```
 
 ## Observability pipeline
+
 Evidence (Prometheus + Grafana + Loki + Tempo + OTel configs)
+
 ```text
 # prometheus.yml
 scrape_configs:
@@ -132,6 +156,7 @@ scrape_configs:
     static_configs:
       - targets: ["pushgateway:9091"]
 ```
+
 ```text
 # grafana-datasources.yml
 datasources:
@@ -145,6 +170,7 @@ datasources:
     type: tempo
     url: http://tempo:3200
 ```
+
 ```text
 # grafana-dashboards.yml
 providers:
@@ -154,6 +180,7 @@ providers:
     options:
       path: /var/lib/grafana/dashboards
 ```
+
 ```text
 # loki-config.yml
 server:
@@ -163,6 +190,7 @@ common:
     filesystem:
       chunks_directory: /loki/chunks
 ```
+
 ```text
 # tempo.yml
 distributor:
@@ -172,6 +200,7 @@ distributor:
         grpc:
         http:
 ```
+
 ```text
 # otel-collector.yml
 receivers:
@@ -183,6 +212,7 @@ exporters:
   otlp:
     endpoint: tempo:4317
 ```
+
 ```text
 # nginx.conf
 server {

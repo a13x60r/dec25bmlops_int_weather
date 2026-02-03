@@ -31,3 +31,16 @@ docker-build:
 
 docker-run:
 	docker run --rm --env-file .env --network host weather-au-mlops:dev
+
+help:
+	@echo "Available commands:"
+	@echo "  make venv           - Create python virtual environment"
+	@echo "  make install        - Install dependencies"
+	@echo "  make precommit      - Install pre-commit hooks"
+	@echo "  make format         - Format code with ruff"
+	@echo "  make lint           - Lint code with ruff"
+	@echo "  make test           - Run tests with pytest"
+	@echo "  make mlflow-up      - Start MLflow service"
+	@echo "  make mlflow-down    - Stop MLflow service"
+	@echo "  make docker-build   - Build Docker image for dev"
+	@echo "  make docker-run     - Run Docker image for dev"

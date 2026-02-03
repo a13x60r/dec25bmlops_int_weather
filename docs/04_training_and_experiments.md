@@ -1,11 +1,13 @@
 # Training and Experiments
 
 ## Repro entrypoints (how to train)
+
 - DVC pipeline: `dvc repro` runs preprocess -> splits -> train.
 - Direct script: `python src/models/train_model.py --split_id <n>`.
 - Docker Compose training profile: `docker compose --profile train up`.
 
 Evidence
+
 ```text
 # dvc.yaml
 stages:
@@ -16,6 +18,7 @@ stages:
   train:
     cmd: python src/models/train_model.py
 ```
+
 ```text
 # README.md (excerpt)
 Reproduce the full DVC pipeline (trains model, updates artifacts):
@@ -26,6 +29,7 @@ Train directly (skip DVC)
 
     python src/models/train_model.py --split_id 1
 ```
+
 ```text
 # docker-compose.yml (excerpt)
 trainer:
@@ -34,7 +38,9 @@ trainer:
 ```
 
 ## Python entrypoints discovered
+
 Evidence
+
 ```text
 $ grep -R "if __name__ == \"__main__\"" -n src
 src/api/main.py:179:if __name__ == "__main__":
@@ -49,9 +55,11 @@ src/weather_au_mlops/train.py:49:if __name__ == "__main__":
 ```
 
 ## Params/config sources
+
 - Core params live in `params.yaml`, loaded via `src/config/__init__.py`.
 
 Evidence
+
 ```text
 $ cat params.yaml
 data:
@@ -72,17 +80,58 @@ mlflow:
   tracking_uri: http://mlflow:5000
   experiment_name: weather-au-rain
 ```
+
 ```text
 # src/config/__init__.py
 PARAMS = load_params()
 MLFLOW_URI = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
 ```
 
+## Training Pipeline Visualization
+
+### Retraining Workflow (Sequence)
+
+```mermaid
+sequenceDiagram
+    participant AF as Airflow DAG
+    participant FW as Fetch Weather
+    participant DVC as DVC Pipeline
+    participant ML as MLflow
+    participant S3 as MinIO (Model Store)
+   
+    AF->>FW: Trigger Data Fetch
+    FW->>DVC: Update raw data
+    AF->>DVC: Trigger DVC Repro (train)
+    DVC->>DVC: Preprocess -> Split -> Train
+    DVC->>ML: Log Params & Metrics
+    DVC->>S3: Save Model Artifact
+    ML->>ML: Register Model Version
+    Note over ML, S3: Model is now ready for promotion
+```
+
+### Model Training Logic (Detailed)
+
+```mermaid
+stateDiagram-v2
+    [*] --> LoadConfig: Read params.yaml
+    LoadConfig --> SplitData: Train/Test Split
+    SplitData --> Preprocess: Impute & Scale
+    Preprocess --> Train: XGBoost Fit
+    Train --> Evaluate: Calculate F1/ROC-AUC
+    Evaluate --> CheckThreshold: F1 > 0.8?
+    CheckThreshold --> Register: Yes
+    CheckThreshold --> Fail: No
+    Register --> [*]
+    Fail --> [*]
+```
+
 ## MLflow tracking and registry
+
 - Tracking URI is set from config and environment; experiments are named `weather-au-rain`.
 - Training logs metrics, artifacts, and registers models; production promotion is based on F1 improvement.
 
 Evidence
+
 ```text
 # src/models/train_model.py
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
@@ -95,6 +144,7 @@ model_details = mlflow.register_model(model_uri, MODEL_NAME)
 if is_better:
     client.transition_model_version_stage(MODEL_NAME, model_details.version, "Production")
 ```
+
 ```text
 $ grep -R "mlflow" -n src dags . | head -n 50
 src/models/train_model.py:23:import mlflow
@@ -106,10 +156,12 @@ dags/data_update_dag.py:47:            "MLFLOW_TRACKING_URI": "http://mlflow:500
 ```
 
 ## Determinism and reproducibility
+
 - `random_state` is set in `params.yaml` and used in SMOTE and model training.
 - Dependencies are pinned in `pyproject.toml` and `requirements.txt`; base images are pinned in Dockerfiles.
 
 Evidence
+
 ```text
 # src/models/train_model.py
 smote = SMOTE(random_state=PARAMS["data"]["random_state"])
@@ -117,6 +169,7 @@ model_params = {
     "random_state": PARAMS["model"]["random_state"],
 }
 ```
+
 ```text
 $ cat pyproject.toml (excerpt)
 dependencies = [
@@ -128,24 +181,31 @@ dependencies = [
     "bentoml==1.4.33",
 ]
 ```
+
 ```text
 # Dockerfile.dev
 FROM python:3.11.7-slim
 ```
 
 ## Makefile availability
-Status: Not present in repo
-- A Makefile exists, but `make` is not available in this environment.
+
+- A Makefile exists with a `help` target listing build/train/test commands.
 
 Evidence
+
 ```text
 $ make help
-bash: line 1: make: command not found
+Available commands:
+  make venv           - Create python virtual environment
+  make install        - Install dependencies
+...
 ```
 
 Expected in mature setup
+
 - A documented `make help` target listing build/train/test commands.
 
 Actionable recommendations
+
 - Add a `help` target in `Makefile` and ensure CI images include GNU Make.
 - Mirror the DVC and Docker training commands in Make targets.

@@ -1,9 +1,11 @@
 # Branch Summary
 
 ## Repo purpose (RainTomorrow binary classification)
+
 - The README states the task is RainTomorrow binary classification on Australian weather data, and positions the project as an MLOps stack integration.
 
 Evidence
+
 ```text
 $ cat README.md (excerpt)
 This project is an **MLOps-oriented weather forecasting system** based on Australian daily weather observations.
@@ -14,22 +16,27 @@ It extends the classic *cookiecutter data science* structure with **[data versio
 ```
 
 ## Branch + last commit
+
 - Current branch is `docs-g` with last commit `b49fa5f docs: add quickstart section to README`.
 
 Evidence
+
 ```text
 $ git rev-parse --abbrev-ref HEAD
 docs-g
 ```
+
 ```text
 $ git log -1 --oneline
 b49fa5f docs: add quickstart section to README
 ```
 
 ## Working tree status
+
 - There are untracked files including `.devcontainer/` and several Markdown files.
 
 Evidence
+
 ```text
 $ git status --porcelain
 ?? .devcontainer/
@@ -44,6 +51,7 @@ $ git status --porcelain
 ## Repo inventory (top-level + depth-3 file list)
 
 Evidence
+
 ```text
 $ ls -la
 total 513
@@ -56,13 +64,13 @@ drwxr-xr-x 1 aboro 197609     0 Jan 30 19:10 .dvc
 drwxr-xr-x 1 aboro 197609     0 Jan 30 14:24 .github
 -rw-r--r-- 1 aboro 197609  1629 Jan 30 14:24 .gitignore
 -rw-r--r-- 1 aboro 197609   773 Jan 30 14:24 .pre-commit-config.yaml
--rw-r--r-- 1 aboro 197609  3458 Jan 30 14:24 API.md
 -rw-r--r-- 1 aboro 197609   650 Feb  2 08:38 Dockerfile
 -rw-r--r-- 1 aboro 197609   551 Jan 30 14:24 Dockerfile.dev
 -rw-r--r-- 1 aboro 197609   124 Jan 30 14:24 Dockerfile.mlflow
 -rw-r--r-- 1 aboro 197609   716 Jan 30 14:24 Makefile
 -rw-r--r-- 1 aboro 197609 22333 Feb  2 12:34 README.md
 ```
+
 ```text
 $ ls -la (continued)
 drwxr-xr-x 1 aboro 197609     0 Jan 30 14:24 artifacts
@@ -84,6 +92,7 @@ drwxr-xr-x 1 aboro 197609     0 Feb  2 10:26 tests
 ```
 
 Evidence (file inventory, trimmed)
+
 ```text
 $ find . -maxdepth 3 -type f | sort
 ./.devcontainer/devcontainer.json
@@ -118,6 +127,7 @@ $ find . -maxdepth 3 -type f | sort
 ```
 
 Evidence (key directories)
+
 ```text
 $ ls -la dags src tests models artifacts data || true
 artifacts:
@@ -142,6 +152,7 @@ drwxr-xr-x 1 aboro 197609  0 Jan 30 19:10 interim
 drwxr-xr-x 1 aboro 197609  0 Jan 30 19:10 processed
 drwxr-xr-x 1 aboro 197609  0 Jan 30 19:10 raw
 ```
+
 ```text
 $ ls -la dags src tests models artifacts data || true (continued)
 models:
@@ -166,6 +177,7 @@ drwxr-xr-x 1 aboro 197609    0 Feb  2 11:02 monitoring
 drwxr-xr-x 1 aboro 197609    0 Feb  2 08:36 streamlit_app
 drwxr-xr-x 1 aboro 197609    0 Jan 30 14:24 visualization
 ```
+
 ```text
 $ ls -la dags src tests models artifacts data || true (continued)
 tests:
@@ -178,6 +190,7 @@ drwxr-xr-x 1 aboro 197609    0 Feb  2 13:22 ..
 ```
 
 Evidence (Grafana directory)
+
 ```text
 $ ls -la grafana || true
 total 16
@@ -187,15 +200,18 @@ drwxr-xr-x 1 aboro 197609 0 Feb  2 11:23 dashboards
 ```
 
 ## What this branch implements vs baseline
+
 - The only visible delta is the latest commit message: a docs update adding a Quickstart section in README; no code changes were inspected beyond that.
 
 Evidence
+
 ```text
 $ git log -1 --oneline
 b49fa5f docs: add quickstart section to README
 ```
 
 ## Component map (paths)
+
 - Data versioning and pipeline: `dvc.yaml`, `dvc.lock`, `.dvc/config`, `data/`
 - Training + evaluation: `src/models/train_model.py`, `src/models/predict_model.py`
 - Orchestration (Airflow): `dags/data_update_dag.py`, `dags/retrain_dag.py`
