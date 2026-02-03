@@ -574,6 +574,29 @@ Deploys the application and service to container registries.
 * **BentoML Service**: Containerizes the API service.
   * **Pushes to**: DockerHub (`a13x60r/rain-prediction-service`) & GHCR (`ghcr.io/a13x60r/rain-prediction-service`).
 
+**How to Trigger**:
+
+1. **Tag a commit**: `git tag v1.0.0`
+2. **Push the tag**: `git push origin v1.0.0`
+
+This automatically:
+
+* Builds Docker images.
+* Pushes to GHCR & Docker Hub with the tag (e.g., `v1.0.0`) and `latest`.
+* Creates a **GitHub Release** with auto-generated notes.
+
+**How to Use a Release**:
+
+New users can simply pull the pre-built image for a specific version without needing to build from source:
+
+```bash
+# Pull a specific version
+docker pull ghcr.io/a13x60r/rain-prediction-service:v1.0.0
+
+# Run it
+docker run -it --rm -p 3000:3000 ghcr.io/a13x60r/rain-prediction-service:v1.0.0 serve
+```
+
 ### 3. Jenkins Pipeline ([`Jenkinsfile`](Jenkinsfile))
 
 **Trigger**: Poll SCM / Webhook.

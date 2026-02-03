@@ -185,5 +185,23 @@ Evidence
 ```text
 # verify_bento.py
 url = "http://127.0.0.1:3000/predict"
-response = requests.post(url, json=data, timeout=10)
-```
+
+## Release Process
+
+To create a new release, follow these steps:
+
+1.  **Tag the commit**: Create a new tag following the `v*.*.*` pattern (e.g., `v1.0.0`).
+    ```bash
+    git tag v1.0.0
+    ```
+
+2.  **Push the tag**: Push the tag to the remote repository.
+    ```bash
+    git push origin v1.0.0
+    ```
+
+3.  **Automated Workflow**:
+    - The `Release Pipeline` workflow will be triggered.
+    - It will build the Docker images and push them to Docker Hub and GHCR.
+    - It will create a **GitHub Release** with auto-generated release notes.
+
