@@ -58,7 +58,7 @@ It extends the classic *cookiecutter data science* structure with **[data versio
 
 ## Quickstart
 
-Get the application running locally with Docker in 3 steps:
+Get the application running locally with Docker in 4 steps:
 
 1. **Clone the repository:**
 
@@ -80,16 +80,26 @@ Get the application running locally with Docker in 3 steps:
 
    *Optional: Edit `.env` to add your `OPENWEATHER_API_KEY` if you want real-time data fetching.*
 
-3. **Start Services:**
+3. **Fetch Data:**
+   Download the datasets and trained models.
+
+   ```bash
+   dvc pull
+   ```
+
+   > [!NOTE]
+   > If this command fails, ensure you have configured your DVC remote credentials (see [Configuration](#configuration)).
+
+4. **Start Services:**
 
    ```bash
    docker compose up -d --build
    ```
 
    **Access the App:**
-   * **Streamlit UI:** [http://localhost:8501](http://localhost:8501)
-   * **API (Swagger):** [http://localhost:3000](http://localhost:3000)
-   * **MLflow:** [http://localhost:5000](http://localhost:5000)
+   * **[Streamlit UI](#services--features):** [http://localhost:8501](http://localhost:8501)
+   * **[API (Swagger)](#option-d-run-with-bentoml):** [http://localhost:3000](http://localhost:3000)
+   * **[MLflow](#services--features):** [http://localhost:5000](http://localhost:5000)
 
 ---
 
